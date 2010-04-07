@@ -42,6 +42,11 @@ int main() {
 	RedisResponse r_zscore = r.zscore("z", "lol");
 	cout << "'zscore z lol' gave me a score of " << r_zscore.doubleVal() << endl;
 
+	RedisResponse r_zrange = r.zrange("z", 0, 1000);
+	cout << "'zrange z 0 1000' gave me " << r_zrange.size() << " items." << endl;
+
+	RedisResponse r_zrange_withscores = r.zrange("z", 0, 1000, true);
+	cout << "'zrange z 0 1000 WITHSCORES' gave me " << r_zrange_withscores.size() << " items." << endl;
 
 	return 0;
 }

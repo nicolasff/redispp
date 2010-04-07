@@ -494,6 +494,28 @@ RedisResponse
 Redis::zrevrank(RedisString key, RedisString member) {
 	return generic_zrank("ZREVRANK", key, member);
 }
+RedisResponse
+Redis::zrange(RedisString key, long start, long end, bool withscores) {
+	return generic_zrange("ZRANGE", key, start, end, withscores);
+}
+RedisResponse
+Redis::zrevrange(RedisString key, long start, long end, bool withscores) {
+	return generic_zrange("ZREVRANGE", key, start, end, withscores);
+}
+
+RedisResponse
+Redis::generic_zrange(string keyword, RedisString key, long start, long end, bool withscores) {
+
+	RedisCommand cmd(keyword);
+
+	cmd << key << start << end;
+	if(withscores) {
+		cmd << RedisString("WITHSCORES");
+	}
+	run(cmd);
+
+	return read_multi_bulk();
+}
 
 /* generic commands below */
 
