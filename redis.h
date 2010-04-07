@@ -37,6 +37,7 @@ public:
 
 	RedisResponse lpush(RedisString key, RedisString val);
 	RedisResponse rpush(RedisString key, RedisString val);
+	RedisResponse rpoplpush(RedisString src, RedisString dst);
 	RedisResponse llen(RedisString key);
 	RedisResponse lpop(RedisString key);
 	RedisResponse rpop(RedisString key);

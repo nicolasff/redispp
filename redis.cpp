@@ -377,6 +377,17 @@ Redis::rpush(RedisString key, RedisString val) {
 }
 
 RedisResponse
+Redis::rpoplpush(RedisString src, RedisString dst) {
+
+	RedisCommand cmd("RPOPLPUSH");
+	cmd << src << dst;
+
+	run(cmd);
+
+	return read_string();
+}
+
+RedisResponse
 Redis::llen(RedisString key) {
 	RedisCommand cmd("LLEN");
 	cmd << key;

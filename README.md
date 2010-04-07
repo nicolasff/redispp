@@ -27,6 +27,7 @@ This project aims to provide a stable a feature-complete C++ library for Redis.
 
 * lpush
 * rpush
+* rpoplpush
 * llen
 * lpop
 * rpop
@@ -90,7 +91,6 @@ This project aims to provide a stable a feature-complete C++ library for Redis.
 * flushdb
 * flushall
 * sort
-* rpoplpush
 * monitor
 * getset
 * slaveof
