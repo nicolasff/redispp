@@ -60,6 +60,8 @@ public:
 	RedisResponse zrem(RedisString key, RedisString member);
 	RedisResponse zincrby(RedisString key, double score, RedisString member);
 	RedisResponse zscore(RedisString key, RedisString member);
+	RedisResponse zrank(RedisString key, RedisString member);
+	RedisResponse zrevrank(RedisString key, RedisString member);
 
 private:
 	void run(RedisCommand &c);
@@ -70,6 +72,7 @@ private:
 	void          generic_list_item_action(std::string keyword, RedisString key, int n, RedisString val);
 	RedisResponse generic_set_key_value(std::string keyword, RedisString key, RedisString val);
 	void          generic_multi_parameter(std::string keyword, RedisList &keys);
+	RedisResponse generic_zrank(std::string keyword, RedisString key, RedisString member);
 	
 	RedisResponse read_string();
 	RedisResponse read_integer();

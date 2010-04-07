@@ -486,8 +486,26 @@ Redis::zscore(RedisString key, RedisString member) {
 
 	return read_double();
 }
+RedisResponse
+Redis::zrank(RedisString key, RedisString member) {
+	return generic_zrank("ZRANK", key, member);
+}
+RedisResponse
+Redis::zrevrank(RedisString key, RedisString member) {
+	return generic_zrank("ZREVRANK", key, member);
+}
 
 /* generic commands below */
+
+RedisResponse
+Redis::generic_zrank(string keyword, RedisString key, RedisString member) {
+	RedisCommand cmd(keyword);
+
+	cmd << key << member;
+	run(cmd);
+
+	return read_integer();
+}
 
 void
 Redis::generic_multi_parameter(string keyword, RedisList &keys) {
