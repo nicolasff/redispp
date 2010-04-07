@@ -48,13 +48,14 @@ private:
 	RedisResponse generic_increment(std::string keyword, RedisString key, int val);
 	RedisResponse generic_push(std::string keyword, RedisString key, RedisString val);
 	RedisResponse generic_pop(std::string keyword, RedisString key);
-	void          generic_list_item_action(RedisString key, int n, RedisString val);
+	void          generic_list_item_action(std::string keyword, RedisString key, int n, RedisString val);
 	
 	RedisResponse read_string();
 	RedisResponse read_integer();
 	RedisResponse read_integer_as_bool();
 	RedisResponse read_status_code();
 	RedisResponse read_single_line();
+	RedisResponse read_multi_bulk();
 
 	std::string getline();
 	int m_fd;

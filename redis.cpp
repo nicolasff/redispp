@@ -118,7 +118,7 @@ Redis::read_integer() {
 	std::string str = getline();
 	if(str[0] == ':') {
 		ret.type(REDIS_LONG);
-		ret.setLong(::atol(1+&str[0]));
+		ret.setLong(::atol(&str[1]));
 	}
 	return ret;
 }
@@ -140,6 +140,29 @@ Redis::read_integer_as_bool() {
 				ret.setBool(l == 1);
 				break;
 		}
+	}
+	return ret;
+}
+
+RedisResponse
+Redis::read_multi_bulk() {
+	RedisResponse err(REDIS_ERR);
+	RedisResponse ret(REDIS_LIST);
+
+	std::string str = getline();
+	if(str[0] != '*') {
+		return err;
+	}
+	long count = ::atol(&str[1]);
+	if(count <= 0) {
+		return ret;
+	}
+	for(long i = 0; i < count; ++i) {
+		RedisResponse s = read_string();
+		if(s.type() != REDIS_STRING) {
+			return err;
+		}
+		ret.addString(s.string());
 	}
 	return ret;
 }
@@ -366,7 +389,7 @@ Redis::generic_increment(std::string keyword, RedisString key, int val) {
 }
 
 void
-Redis::generic_list_item_action(RedisString key, int n, RedisString val) {
+Redis::generic_list_item_action(string keyword, RedisString key, int n, RedisString val) {
 	RedisCommand cmd(keyword);
 	cmd << key << n << val;
 
