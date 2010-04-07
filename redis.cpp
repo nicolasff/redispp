@@ -234,6 +234,7 @@ RedisResponse
 Redis::ttl(RedisString key) {
 	RedisCommand cmd("TTL");
 	cmd << key;
+
 	run(cmd);
 
 	return read_integer();
@@ -245,6 +246,26 @@ Redis::ping() {
 	run(cmd);
 
 	return read_status_code();
+}
+
+RedisResponse
+Redis::lpush(RedisString key, RedisString val) {
+	return generic_push("LPUSH", key, val);
+}
+RedisResponse
+Redis::rpush(RedisString key, RedisString val) {
+	return generic_push("RPUSH", key, val);
+}
+
+RedisResponse
+Redis::generic_push(string keyword, RedisString key, RedisString val) {
+
+	RedisCommand cmd(keyword);
+
+	cmd << key << val;
+	run(cmd);
+
+	return read_integer();
 }
 
 RedisResponse

@@ -16,6 +16,11 @@ This project aims to provide a stable a feature-complete C++ library for Redis.
 * exists
 * randomkey
 
+--------------------
+
+* lpush
+* rpush
+
 #### Functions not implemented
 
 * auth
@@ -33,8 +38,6 @@ This project aims to provide a stable a feature-complete C++ library for Redis.
 
 --------------------
 
-* lpush
-* rpush
 * lpop
 * rpop
 * llen

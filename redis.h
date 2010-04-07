@@ -28,6 +28,9 @@ public:
 	RedisResponse ping();
 	RedisResponse setNx(RedisString src, RedisString dst);
 	RedisResponse exists(RedisString key);
+	RedisResponse lpush(RedisString key, RedisString val);
+	RedisResponse rpush(RedisString key, RedisString val);
+
 
 	Redis& pipeline();
 
@@ -35,6 +38,7 @@ private:
 	void run(RedisCommand &c);
 
 	RedisResponse generic_increment(std::string keyword, RedisString key, int val);
+	RedisResponse generic_push(std::string keyword, RedisString key, RedisString val);
 	
 	RedisResponse read_string();
 	RedisResponse read_integer();
