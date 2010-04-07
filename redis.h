@@ -52,6 +52,9 @@ public:
 	RedisResponse sinter(RedisList keys);
 	RedisResponse sunion(RedisList keys);
 	RedisResponse sdiff(RedisList keys);
+	RedisResponse sinterstore(RedisList keys);
+	RedisResponse sunionstore(RedisList keys);
+	RedisResponse sdiffstore(RedisList keys);
 
 
 private:

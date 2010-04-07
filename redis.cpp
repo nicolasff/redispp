@@ -404,22 +404,37 @@ Redis::smove(RedisString src, RedisString dst, RedisString member) {
 
 RedisResponse
 Redis::sinter(RedisList keys) {
-
 	generic_multi_parameter("SINTER", keys);
 	return read_multi_bulk();
 }
 RedisResponse
 Redis::sunion(RedisList keys) {
-
 	generic_multi_parameter("SUNION", keys);
 	return read_multi_bulk();
 }
 RedisResponse
 Redis::sdiff(RedisList keys) {
-
 	generic_multi_parameter("SDIFF", keys);
 	return read_multi_bulk();
 }
+RedisResponse
+Redis::sinterstore(RedisList keys) {
+	generic_multi_parameter("SINTERSTORE", keys);
+	return read_integer();
+}
+RedisResponse
+Redis::sunionstore(RedisList keys) {
+	generic_multi_parameter("SUNIONSTORE", keys);
+	return read_integer();
+}
+RedisResponse
+Redis::sdiffstore(RedisList keys) {
+	generic_multi_parameter("SDIFFSTORE", keys);
+	return read_integer();
+}
+
+/* generic commands below */
+
 void
 Redis::generic_multi_parameter(string keyword, RedisList &keys) {
 	RedisCommand cmd(keyword);
@@ -429,9 +444,6 @@ Redis::generic_multi_parameter(string keyword, RedisList &keys) {
 	}
 	run(cmd);
 }
-
-
-/* generic commands below */
 
 RedisResponse
 Redis::generic_pop(string keyword, RedisString key){
