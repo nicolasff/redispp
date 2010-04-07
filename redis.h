@@ -42,6 +42,9 @@ public:
 	RedisResponse lset(RedisString key, int pos, RedisString val);
 	RedisResponse lrange(RedisString key, int start, int end);
 
+	RedisResponse sadd(RedisString key, RedisString val);
+	RedisResponse srem(RedisString key, RedisString val);
+
 
 private:
 	void run(RedisCommand &c);
@@ -50,6 +53,7 @@ private:
 	RedisResponse generic_push(std::string keyword, RedisString key, RedisString val);
 	RedisResponse generic_pop(std::string keyword, RedisString key);
 	void          generic_list_item_action(std::string keyword, RedisString key, int n, RedisString val);
+	RedisResponse generic_set_key_value(std::string keyword, RedisString key, RedisString val);
 	
 	RedisResponse read_string();
 	RedisResponse read_integer();

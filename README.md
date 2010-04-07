@@ -30,6 +30,11 @@ This project aims to provide a stable a feature-complete C++ library for Redis.
 * lset
 * lrange
 
+--------------------
+
+* sadd
+* srem
+
 #### Functions not implemented
 
 * auth
@@ -46,8 +51,6 @@ This project aims to provide a stable a feature-complete C++ library for Redis.
 
 --------------------
 
-* sadd
-* srem
 * smove
 * sismember
 * scard

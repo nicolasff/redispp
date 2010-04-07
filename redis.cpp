@@ -284,6 +284,8 @@ Redis::ping() {
 	return read_status_code();
 }
 
+/* List commands */
+
 RedisResponse
 Redis::lpush(RedisString key, RedisString val) {
 	return generic_push("LPUSH", key, val);
@@ -357,6 +359,28 @@ Redis::lrange(RedisString key, int start, int end) {
 	run(cmd);
 
 	return read_multi_bulk();
+}
+
+/* Set commands */
+
+RedisResponse
+Redis::sadd(RedisString key, RedisString val) {
+	return generic_set_key_value("SADD", key, val);
+}
+
+RedisResponse
+Redis::srem(RedisString key, RedisString val) {
+	return generic_set_key_value("SREM", key, val);
+}
+
+RedisResponse
+Redis::generic_set_key_value(string keyword, RedisString key, RedisString val) {
+
+	RedisCommand cmd(keyword);
+	cmd << key << val;
+	run(cmd);
+
+	return read_integer_as_bool();
 }
 
 
