@@ -289,6 +289,31 @@ Redis::rpop(RedisString key) {
 }
 
 RedisResponse
+Redis::ltrim(RedisString key, int start, int end) {
+
+	RedisCommand cmd("LTRIM");
+	cmd << key << start << end;
+
+	run(cmd);
+
+	return read_status_code();
+}
+
+RedisResponse
+Redis::lindex(RedisString key, int pos) {
+
+	RedisCommand cmd("LINDEX");
+	cmd << key << pos;
+
+	run(cmd);
+
+	return read_string();
+}
+
+
+/* generic commands below */
+
+RedisResponse
 Redis::generic_pop(string keyword, RedisString key){
 	RedisCommand cmd(keyword);
 

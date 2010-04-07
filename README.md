@@ -24,6 +24,8 @@ This project aims to provide a stable a feature-complete C++ library for Redis.
 * llen
 * lpop
 * rpop
+* ltrim
+* lindex
 
 #### Functions not implemented
 
@@ -41,9 +43,7 @@ This project aims to provide a stable a feature-complete C++ library for Redis.
 
 --------------------
 
-* lindex
 * lrange
-* ltrim
 * lrem
 * lset
 

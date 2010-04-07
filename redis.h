@@ -36,6 +36,8 @@ public:
 	RedisResponse llen(RedisString key);
 	RedisResponse lpop(RedisString key);
 	RedisResponse rpop(RedisString key);
+	RedisResponse ltrim(RedisString key, int start, int end);
+	RedisResponse lindex(RedisString key, int pos);
 
 
 
