@@ -508,8 +508,12 @@ Redis::zcount(RedisString key, long start, long end) {
 	return generic_z_start_end_int("ZCOUNT", key, start, end);
 }
 RedisResponse
-Redis::zremrangebyrank(RedisString key, long start, long end) {
-	return generic_z_start_end_int("ZREMRANGEBYRANK", key, start, end);
+Redis::zremrangebyrank(RedisString key, long min, long max) {
+	return generic_z_start_end_int("ZREMRANGEBYRANK", key, min, max);
+}
+RedisResponse
+Redis::zremrangebyscore(RedisString key, long min, long max) {
+	return generic_z_start_end_int("ZREMRANGEBYSCORE", key, min, max);
 }
 
 RedisResponse
