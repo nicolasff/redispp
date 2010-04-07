@@ -48,6 +48,7 @@ public:
 	RedisResponse scard(RedisString key);
 	RedisResponse sismember(RedisString key, RedisString val);
 	RedisResponse srandmember(RedisString key);
+	RedisResponse smove(RedisString src, RedisString dst, RedisString member);
 
 
 private:

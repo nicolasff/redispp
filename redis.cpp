@@ -397,6 +397,17 @@ Redis::srandmember(RedisString key) {
 	return generic_pop("SRANDMEMBER", key);
 }
 
+RedisResponse
+Redis::smove(RedisString src, RedisString dst, RedisString member) {
+
+	RedisCommand cmd("SMOVE");
+	cmd << src << dst << member;
+
+	run(cmd);
+	
+	return read_integer_as_bool();
+}
+
 
 /* generic commands below */
 
