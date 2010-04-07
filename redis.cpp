@@ -699,6 +699,46 @@ Redis::generic_z_set_operation(string keyword, RedisString key, RedisList keys,
 	return read_integer();
 }
 
+/* hash commands */
+
+RedisResponse
+Redis::hset(RedisString key, RedisString field, RedisString val) {
+	RedisCommand cmd("HSET");
+	cmd << key << field << val;
+
+	run(cmd);
+
+	return read_integer_as_bool();
+}
+RedisResponse
+Redis::hget(RedisString key, RedisString field) {
+	RedisCommand cmd("HSET");
+	cmd << key << field;
+
+	run(cmd);
+
+	return read_string();
+}
+
+RedisResponse
+Redis::hdel(RedisString key, RedisString field) {
+	RedisCommand cmd("HDEL");
+	cmd << key << field;
+
+	run(cmd);
+
+	return read_integer_as_bool();
+}
+RedisResponse
+Redis::hexists(RedisString key, RedisString field) {
+	RedisCommand cmd("HEXISTS");
+	cmd << key << field;
+
+	run(cmd);
+
+	return read_integer_as_bool();
+}
+
 /* generic commands below */
 
 RedisResponse

@@ -86,6 +86,11 @@ public:
 	RedisResponse zinter(RedisString key, RedisList keys, std::vector<double> weights);
 	RedisResponse zinter(RedisString key, RedisList keys, std::vector<double> weights, std::string aggregate);
 
+	RedisResponse hset(RedisString key, RedisString field, RedisString val);
+	RedisResponse hget(RedisString key, RedisString field);
+	RedisResponse hdel(RedisString key, RedisString field);
+	RedisResponse hexists(RedisString key, RedisString field);
+
 
 private:
 	void run(RedisCommand &c);

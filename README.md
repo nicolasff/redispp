@@ -71,6 +71,13 @@ This project aims to provide a stable a feature-complete C++ library for Redis.
 * zunion
 * zinter
 
+--------------------
+
+* hset
+* hget
+* hdel
+* hexists
+
 #### Functions not implemented
 
 * auth
@@ -107,14 +114,10 @@ This project aims to provide a stable a feature-complete C++ library for Redis.
 
 --------------------
 
-* hset
-* hget
-* hdel
 * hlen
 * hkeys
 * hvals
 * hgetall
-* hexists
 * hincrby
 
 --------------------
