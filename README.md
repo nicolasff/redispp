@@ -12,12 +12,12 @@ This project aims to provide a stable a feature-complete C++ library for Redis.
 * renameNx
 * ttl
 * ping
+* setnx
 
 #### Functions not implemented
 
 * auth
 * echo
-* setnx
 * del
 * exists
 * select

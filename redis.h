@@ -28,6 +28,7 @@ public:
 	RedisResponse randomKey();
 	RedisResponse ttl(RedisString key);
 	RedisResponse ping();
+	RedisResponse setNx(RedisString src, RedisString dst);
 
 	Redis& pipeline();
 
@@ -38,6 +39,7 @@ private:
 	
 	RedisResponse read_string();
 	RedisResponse read_integer();
+	RedisResponse read_integer_as_bool();
 	RedisResponse read_status_code();
 	RedisResponse read_single_line();
 

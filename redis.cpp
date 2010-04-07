@@ -129,6 +129,27 @@ Redis::read_integer() {
 	return ret;
 }
 
+/**
+ * Reads :1 as true, :0 as false.
+ */
+RedisResponse
+Redis::read_integer_as_bool() {
+	RedisResponse ret(REDIS_ERR);
+
+	std::string str = getline();
+	if(str[0] == ':') {
+		long l;
+		switch((l = ::atol(&str[1]))) {
+			case 0:
+			case 1:
+				ret.type(REDIS_BOOL);
+				ret.setBool(l == 1);
+				break;
+		}
+	}
+	return ret;
+}
+
 RedisResponse
 Redis::get(RedisString key){
 	RedisCommand cmd("GET");
@@ -158,6 +179,15 @@ Redis::set(const char *key, const size_t key_len, const char *val, const size_t 
 bool 
 Redis::set(const std::string key, const std::string val) {
 	return set(key.c_str(), key.size(), val.c_str(), val.size());
+}
+
+RedisResponse
+Redis::setNx(RedisString key, RedisString val) {
+	RedisCommand cmd("SETNX");
+	cmd << key << val;
+	run(cmd);
+
+	return read_integer_as_bool();
 }
 
 Redis&
