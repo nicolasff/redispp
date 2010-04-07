@@ -310,6 +310,20 @@ Redis::lindex(RedisString key, int pos) {
 	return read_string();
 }
 
+RedisResponse
+Redis::lrem(RedisString key, int count, RedisString val) {
+
+	generic_list_item_action("LREM", key, count, val);
+	return read_integer();
+}
+
+RedisResponse
+Redis::lset(RedisString key, int pos, RedisString val) {
+
+	generic_list_item_action("LSET", key, pos, val);
+	return read_status_code();
+}
+
 
 /* generic commands below */
 
@@ -349,5 +363,13 @@ Redis::generic_increment(std::string keyword, RedisString key, int val) {
 	}
 
 	return read_integer();
+}
+
+void
+Redis::generic_list_item_action(RedisString key, int n, RedisString val) {
+	RedisCommand cmd(keyword);
+	cmd << key << n << val;
+
+	run(cmd);
 }
 

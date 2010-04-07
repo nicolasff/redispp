@@ -38,7 +38,8 @@ public:
 	RedisResponse rpop(RedisString key);
 	RedisResponse ltrim(RedisString key, int start, int end);
 	RedisResponse lindex(RedisString key, int pos);
-
+	RedisResponse lrem(RedisString key, int count, RedisString val);
+	RedisResponse lset(RedisString key, int pos, RedisString val);
 
 
 private:
@@ -47,6 +48,7 @@ private:
 	RedisResponse generic_increment(std::string keyword, RedisString key, int val);
 	RedisResponse generic_push(std::string keyword, RedisString key, RedisString val);
 	RedisResponse generic_pop(std::string keyword, RedisString key);
+	void          generic_list_item_action(RedisString key, int n, RedisString val);
 	
 	RedisResponse read_string();
 	RedisResponse read_integer();
