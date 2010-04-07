@@ -512,6 +512,32 @@ Redis::zremrangebyrank(RedisString key, long start, long end) {
 	return generic_z_start_end_int("ZREMRANGEBYRANK", key, start, end);
 }
 
+RedisResponse
+Redis::zrangebyscore(RedisString key, long min, long max, bool withscores) {
+
+	RedisCommand cmd("ZRANGEBYSCORE");
+	cmd << key << min << max;
+	if(withscores) {
+		cmd << RedisString("WITHSCORES");
+	}
+
+	run(cmd);
+	return read_multi_bulk();
+}
+
+RedisResponse
+Redis::zrangebyscore(RedisString key, long min, long max, long start, long end, bool withscores) {
+
+	RedisCommand cmd("ZRANGEBYSCORE");
+	cmd << key << min << max << RedisString("LIMIT") << start << end;
+	if(withscores) {
+		cmd << RedisString("WITHSCORES");
+	}
+
+	run(cmd);
+	return read_multi_bulk();
+}
+
 /* generic commands below */
 
 RedisResponse
