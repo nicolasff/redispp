@@ -499,6 +499,34 @@ Redis::zrevrange(RedisString key, long start, long end, bool withscores) {
 }
 
 RedisResponse
+Redis::zcard(RedisString key) {
+	return generic_card("ZCARD", key);
+}
+
+RedisResponse
+Redis::zcount(RedisString key, long start, long end) {
+	return generic_z_start_end_int("ZCOUNT", key, start, end);
+}
+RedisResponse
+Redis::zremrangebyrank(RedisString key, long start, long end) {
+	return generic_z_start_end_int("ZREMRANGEBYRANK", key, start, end);
+}
+
+/* generic commands below */
+
+RedisResponse
+Redis::generic_z_start_end_int(string keyword, RedisString key, long start, long end) {
+
+	RedisCommand cmd(keyword);
+
+	cmd << key << start << end;
+	run(cmd);
+
+	return read_integer();
+}
+
+
+RedisResponse
 Redis::generic_zrange(string keyword, RedisString key, long start, long end, bool withscores) {
 
 	RedisCommand cmd(keyword);
@@ -511,18 +539,6 @@ Redis::generic_zrange(string keyword, RedisString key, long start, long end, boo
 
 	return read_multi_bulk();
 }
-
-RedisResponse
-Redis::zcard(RedisString key) {
-	return generic_card("ZCARD", key);
-}
-
-RedisResponse
-Redis::zcount(RedisString key, long start, long end) {
-	return generic_zrange("ZCOUNT", key, start, end, false);
-}
-
-/* generic commands below */
 
 RedisResponse
 Redis::generic_zrank(string keyword, RedisString key, RedisString member) {

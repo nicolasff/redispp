@@ -58,6 +58,7 @@ This project aims to provide a stable a feature-complete C++ library for Redis.
 * zrevrange
 * zcard
 * zcount
+* zremrangebyrank
 
 #### Functions not implemented
 
@@ -94,7 +95,6 @@ This project aims to provide a stable a feature-complete C++ library for Redis.
 
 * zrangebyscore
 * zremrangebyscore
-* zremrangebyrank
 * zunion
 * zinter
 
