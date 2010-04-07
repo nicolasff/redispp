@@ -190,6 +190,15 @@ Redis::setNx(RedisString key, RedisString val) {
 	return read_integer_as_bool();
 }
 
+RedisResponse
+Redis::exists(RedisString key) {
+	RedisCommand cmd("EXISTS");
+	cmd << key;
+	run(cmd);
+
+	return read_integer_as_bool();
+}
+
 Redis&
 Redis::pipeline() {
 

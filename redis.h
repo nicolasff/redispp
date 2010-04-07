@@ -29,6 +29,7 @@ public:
 	RedisResponse ttl(RedisString key);
 	RedisResponse ping();
 	RedisResponse setNx(RedisString src, RedisString dst);
+	RedisResponse exists(RedisString key);
 
 	Redis& pipeline();
 

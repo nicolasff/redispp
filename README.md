@@ -13,15 +13,15 @@ This project aims to provide a stable a feature-complete C++ library for Redis.
 * ttl
 * ping
 * setnx
+* exists
+* randomkey
 
 #### Functions not implemented
 
 * auth
 * echo
 * del
-* exists
 * select
-* randomkey
 * keys
 * dbsize
 * lastsave
