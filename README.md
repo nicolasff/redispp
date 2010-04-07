@@ -17,6 +17,8 @@ This project aims to provide a stable a feature-complete C++ library for Redis.
 * randomkey
 * del
 * mget
+* mset
+* msetnx
 * expire
 * expireat
 
@@ -92,8 +94,6 @@ This project aims to provide a stable a feature-complete C++ library for Redis.
 * monitor
 * getset
 * slaveof
-* mset
-* msetnx
 
 --------------------
 

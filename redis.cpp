@@ -249,6 +249,26 @@ Redis::expireAt(RedisString key, long timestamp) {
 	return generic_key_int_return_int("EXPIREAT", key, timestamp);
 }
 
+RedisResponse
+Redis::mset(RedisList keys, RedisList vals) {
+
+	RedisResponse err(REDIS_ERR);
+	if(!generic_mset("MSET", keys, vals)) {
+		return err;
+	}
+	return read_status_code();
+}
+
+RedisResponse
+Redis::msetnx(RedisList keys, RedisList vals) {
+
+	RedisResponse err(REDIS_ERR);
+	if(!generic_mset("MSETNX", keys, vals)) {
+		return err;
+	}
+	return read_integer_as_bool();
+}
+
 RedisResponse 
 Redis::incr(RedisString key, int val) {
 
@@ -740,5 +760,23 @@ Redis::generic_card(string keyword, RedisString key) {
 	run(cmd);
 
 	return read_integer();
+}
+
+bool
+Redis::generic_mset(string keyword, RedisList keys, RedisList vals) {
+
+	if(keys.size() != vals.size() || keys.size() == 0) {
+		return false;
+	}
+
+	RedisCommand cmd(keyword);
+	RedisList::const_iterator key;
+	RedisList::const_iterator val;
+	for(key = keys.begin(), val = vals.begin(); key != keys.end(); key++, val++) {
+		cmd << *key << *val;
+	}
+
+	run(cmd);
+	return true;
 }
 

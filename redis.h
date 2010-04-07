@@ -33,6 +33,8 @@ public:
 	RedisResponse mget(RedisList keys);
 	RedisResponse expire(RedisString key, long ttl);
 	RedisResponse expireAt(RedisString key, long timestamp);
+	RedisResponse mset(RedisList keys, RedisList vals);
+	RedisResponse msetnx(RedisList keys, RedisList vals);
 
 	RedisResponse lpush(RedisString key, RedisString val);
 	RedisResponse rpush(RedisString key, RedisString val);
@@ -100,6 +102,8 @@ private:
 	RedisResponse generic_card(std::string keyword, RedisString key);
 	RedisResponse generic_z_set_operation(std::string keyword, RedisString key, RedisList keys,
 		std::vector<double> weights, std::string aggregate);
+	bool generic_mset(std::string keyword, RedisList keys, RedisList vals);
+
 	
 	RedisResponse read_string();
 	RedisResponse read_integer();
