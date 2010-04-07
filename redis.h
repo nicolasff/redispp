@@ -8,8 +8,6 @@
 #include "redisCommand.h"
 #include "redisResponse.h"
 
-typedef std::vector<RedisString> RedisList;
-
 class Redis {
 
 public:
@@ -35,6 +33,7 @@ public:
 	RedisResponse expireAt(RedisString key, long timestamp);
 	RedisResponse mset(RedisList keys, RedisList vals);
 	RedisResponse msetnx(RedisList keys, RedisList vals);
+	RedisResponse info();
 
 	RedisResponse lpush(RedisString key, RedisString val);
 	RedisResponse rpush(RedisString key, RedisString val);

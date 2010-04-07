@@ -269,6 +269,45 @@ Redis::msetnx(RedisList keys, RedisList vals) {
 	return read_integer_as_bool();
 }
 
+RedisResponse
+Redis::info() {
+	RedisCommand cmd("INFO");
+	run(cmd);
+
+	RedisResponse ret = read_string();
+
+	if(ret.type() != REDIS_STRING) {
+		cout << "FAIL" << endl;
+		return RedisResponse(REDIS_ERR);
+	}
+
+	string s = ret.str();
+	ret.type(REDIS_INFO_MAP);
+
+	// now split it on '\r'
+	size_t pos = 0, old_pos = 0;
+	while(true) {
+		pos = s.find('\r', pos);
+		if(pos == string::npos) {
+			break;
+		}
+		string line = s.substr(old_pos, pos - old_pos);
+		pos += 2;
+		old_pos = pos;
+
+		// now split the line on ':'
+		size_t colon_pos = line.find(':');
+		if(colon_pos != string::npos) {
+			string key = line.substr(0, colon_pos);
+			string val = line.substr(colon_pos + 1);
+
+			ret.addString(key, val);
+		}
+	}
+
+	return ret;
+}
+
 RedisResponse 
 Redis::incr(RedisString key, int val) {
 

@@ -6,6 +6,8 @@
 #include <string>
 #include <vector>
 
+typedef std::map<std::string, std::string> RedisInfoMap;
+
 class RedisString : public std::vector<char> {
 
 	public:
@@ -15,6 +17,8 @@ class RedisString : public std::vector<char> {
 		RedisString(const char *s, size_t sz);
 
 };
+
+typedef std::vector<RedisString> RedisList;
 
 class RedisCommand {
 

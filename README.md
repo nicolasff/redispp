@@ -21,6 +21,7 @@ This project aims to provide a stable a feature-complete C++ library for Redis.
 * msetnx
 * expire
 * expireat
+* info
 
 --------------------
 
@@ -90,7 +91,6 @@ This project aims to provide a stable a feature-complete C++ library for Redis.
 * flushall
 * sort
 * rpoplpush
-* info
 * monitor
 * getset
 * slaveof

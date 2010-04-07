@@ -38,6 +38,16 @@ RedisResponse::addString(RedisString s) {
 	m_array.push_back(s);
 	return true;
 }
+
+bool
+RedisResponse::addString(std::string key, std::string val) {
+	if(m_type != REDIS_INFO_MAP) {
+		return false;
+	}
+
+	m_map.insert(make_pair(key, val));
+	return true;
+}
 bool
 RedisResponse::addZString(RedisString s, double score) {
 	if(m_type != REDIS_ZSET) {
