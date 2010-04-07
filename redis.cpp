@@ -44,6 +44,7 @@ Redis::run(RedisCommand &c) {
 	RedisString cmd = c.get();
 
 	int ret = write(m_fd, &cmd[0], cmd.size());
+	(void)ret; // TODO: check return value.
 }
 
 RedisResponse
@@ -345,6 +346,17 @@ Redis::lset(RedisString key, int pos, RedisString val) {
 
 	generic_list_item_action("LSET", key, pos, val);
 	return read_status_code();
+}
+
+RedisResponse
+Redis::lrange(RedisString key, int start, int end) {
+
+	RedisCommand cmd("LRANGE");
+	cmd << key << start << end;
+
+	run(cmd);
+
+	return read_multi_bulk();
 }
 
 

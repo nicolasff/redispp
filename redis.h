@@ -40,6 +40,7 @@ public:
 	RedisResponse lindex(RedisString key, int pos);
 	RedisResponse lrem(RedisString key, int count, RedisString val);
 	RedisResponse lset(RedisString key, int pos, RedisString val);
+	RedisResponse lrange(RedisString key, int start, int end);
 
 
 private:

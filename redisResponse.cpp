@@ -54,6 +54,7 @@ RedisResponse::setBool(bool b) {
 		return false;
 	}
 	m_bool = b;
+	return true;
 }
 
 void 
@@ -89,3 +90,12 @@ RedisResponse::boolVal() const {
 	return m_bool;
 }
 
+int
+RedisResponse::size() const {
+	if(m_type == REDIS_LIST) {
+		return m_array.size();
+	} else if(m_type == REDIS_ZSET) {
+		return m_zarray.size();
+	}
+	return -1;
+}

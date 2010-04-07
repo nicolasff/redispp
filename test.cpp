@@ -24,6 +24,8 @@ int main() {
 	}
 
 	r.del("y");
+	r.lpush("y", "abc");
+	r.lpush("y", "def");
 
 	RedisResponse rllen = r.llen("y");
 	if(rllen.type() == REDIS_LONG) {
@@ -31,6 +33,9 @@ int main() {
 	} else {
 		cout << "FAIL" << endl;
 	}
+
+	RedisResponse resp_range = r.lrange("y", 0, -1);
+	cout << "lrange y 0 -1 gave me " << resp_range.size() << " items." << endl;
 
 
 

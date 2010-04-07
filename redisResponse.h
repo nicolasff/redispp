@@ -27,6 +27,8 @@ public:
 	long value() const;
 	bool boolVal() const;
 
+	int size() const;
+
 private:
 	RedisResponseType m_type;
 
