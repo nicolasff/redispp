@@ -22,6 +22,8 @@ This project aims to provide a stable a feature-complete C++ library for Redis.
 * expire
 * expireat
 * info
+* multi
+* exec
 
 --------------------
 
@@ -109,8 +111,6 @@ This project aims to provide a stable a feature-complete C++ library for Redis.
 
 --------------------
 
-* multi
-* exec
 * discard
 * blpop
 * brpop

@@ -10,6 +10,8 @@
 
 class Redis {
 
+	typedef RedisResponse (Redis::*ResponseReader)();
+
 public:
 	Redis();
 
@@ -96,23 +98,28 @@ public:
 	RedisResponse hgetall(RedisString key);
 	RedisResponse hincrby(RedisString key, RedisString field, double d);
 
+	bool multi();
+	bool pipeline();
+	void discard();
+	std::vector<RedisResponse> exec();
 
 private:
 	void run(RedisCommand &c);
+	RedisResponse run(RedisCommand &c, ResponseReader fun);
 
 	RedisResponse generic_key_int_return_int(std::string keyword, RedisString key, int val, bool addBy = false);
 	RedisResponse generic_push(std::string keyword, RedisString key, RedisString val);
 	RedisResponse generic_pop(std::string keyword, RedisString key);
-	void          generic_list_item_action(std::string keyword, RedisString key, int n, RedisString val);
+	RedisResponse generic_list_item_action(std::string keyword, RedisString key, int n, RedisString val, ResponseReader fun);
 	RedisResponse generic_set_key_value(std::string keyword, RedisString key, RedisString val);
-	void          generic_multi_parameter(std::string keyword, RedisList &keys);
+	RedisResponse generic_multi_parameter(std::string keyword, RedisList &keys, ResponseReader fun);
 	RedisResponse generic_zrank(std::string keyword, RedisString key, RedisString member);
 	RedisResponse generic_zrange(std::string keyword, RedisString key, long start, long end, bool withscores);
 	RedisResponse generic_z_start_end_int(std::string keyword, RedisString key, long start, long end);
 	RedisResponse generic_card(std::string keyword, RedisString key);
 	RedisResponse generic_z_set_operation(std::string keyword, RedisString key, RedisList keys,
 		std::vector<double> weights, std::string aggregate);
-	bool generic_mset(std::string keyword, RedisList keys, RedisList vals);
+	RedisResponse generic_mset(std::string keyword, RedisList keys, RedisList vals, ResponseReader fun);
 	RedisResponse generic_h_simple_list(std::string keyword, RedisString key);
 
 	
@@ -123,11 +130,19 @@ private:
 	RedisResponse read_status_code();
 	RedisResponse read_single_line();
 	RedisResponse read_multi_bulk();
+	RedisResponse read_queued();
+	RedisResponse read_info_reply();
 
 	std::string getline();
 	int m_fd;
 
-	std::list<std::pair<int, char*> > m_cmds;
+	// MULTI/EXEC
+	bool m_multi;
+	std::vector<ResponseReader> m_readers;
+
+	// pipeline
+	bool m_pipeline;
+	RedisString m_cmd;
 
 };
 

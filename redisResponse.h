@@ -7,7 +7,7 @@
 #include <string>
 
 typedef enum {REDIS_ERR, REDIS_LONG, REDIS_STRING, REDIS_BOOL, REDIS_INFO_MAP,
-	REDIS_DOUBLE, REDIS_LIST, REDIS_ZSET} RedisResponseType;
+	REDIS_DOUBLE, REDIS_LIST, REDIS_ZSET, REDIS_QUEUED} RedisResponseType;
 
 class RedisResponse {
 

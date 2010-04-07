@@ -8,7 +8,6 @@ int main() {
 	Redis r;
 
 	r.connect("127.0.0.1", 6379);
-	/*
 	cout << "set('x', 'hello world'): " << (r.set("x", "hello world").boolVal() ? "OK": "FAIL") << endl;
 	RedisResponse resp = r.get("x");
 	if(resp.type() == REDIS_STRING) {
@@ -48,7 +47,6 @@ int main() {
 
 	RedisResponse r_zrange_withscores = r.zrange("z", 0, 1000, true);
 	cout << "'zrange z 0 1000 WITHSCORES' gave me " << r_zrange_withscores.size() << " items." << endl;
-	*/
 
 	r.info();
 
