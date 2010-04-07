@@ -387,12 +387,7 @@ Redis::spop(RedisString key) {
 
 RedisResponse
 Redis::scard(RedisString key) {
-
-	RedisCommand cmd("SCARD");
-	cmd << key;
-	run(cmd);
-
-	return read_integer();
+	return generic_card("SCARD", key);
 }
 RedisResponse
 Redis::sismember(RedisString key, RedisString val) {
@@ -517,6 +512,11 @@ Redis::generic_zrange(string keyword, RedisString key, long start, long end, boo
 	return read_multi_bulk();
 }
 
+RedisResponse
+Redis::zcard(RedisString key) {
+	return generic_card("ZCARD", key);
+}
+
 /* generic commands below */
 
 RedisResponse
@@ -593,5 +593,15 @@ Redis::generic_set_key_value(string keyword, RedisString key, RedisString val) {
 	run(cmd);
 
 	return read_integer_as_bool();
+}
+
+RedisResponse
+Redis::generic_card(string keyword, RedisString key) {
+
+	RedisCommand cmd(keyword);
+	cmd << key;
+	run(cmd);
+
+	return read_integer();
 }
 
