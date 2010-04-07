@@ -46,6 +46,13 @@ This project aims to provide a stable a feature-complete C++ library for Redis.
 * sunionstore
 * sdiffstore
 
+--------------------
+
+* zadd
+* zincrby
+* zrem
+* zscore
+
 #### Functions not implemented
 
 * auth
@@ -79,15 +86,11 @@ This project aims to provide a stable a feature-complete C++ library for Redis.
 
 --------------------
 
-* zadd
-* zincrby
 * zrange
 * zrangebyscore
 * zcount
 * zrevrange
 * zcard
-* zrem
-* zscore
 * zremrangebyscore
 * zremrangebyrank
 * zrank

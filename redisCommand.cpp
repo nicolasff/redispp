@@ -37,12 +37,31 @@ RedisCommand::operator<<(const RedisString s) {
 	return *this;
 }
 
+// TODO: refactor the operator<< for numeric types.
 RedisCommand&
 RedisCommand::operator<<(long l) {
 
 	// copy long value into a string stream
 	stringstream ss;
 	ss << l;
+	string str = ss.str();
+
+	// copy string stream into a char* buffer
+	RedisString s;
+	s.insert(s.end(), str.begin(), str.end());
+
+	// add to the list of elements
+	m_elements.push_back(s);
+
+	return *this;
+}
+
+RedisCommand&
+RedisCommand::operator<<(double d) {
+
+	// copy long value into a string stream
+	stringstream ss;
+	ss << d;
 	string str = ss.str();
 
 	// copy string stream into a char* buffer

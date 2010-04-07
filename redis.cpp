@@ -124,6 +124,19 @@ Redis::read_integer() {
 	return ret;
 }
 
+RedisResponse
+Redis::read_double() {
+	RedisResponse ret = read_string();
+	if(ret.type() != REDIS_STRING) {
+		return ret;
+	}
+	string s = ret.str();
+	ret.type(REDIS_DOUBLE);
+	ret.setDouble(atof(&s[0]));
+
+	return ret;
+}
+
 /**
  * Reads :1 as true, :0 as false.
  */
@@ -312,7 +325,7 @@ RedisResponse
 Redis::ltrim(RedisString key, int start, int end) {
 
 	RedisCommand cmd("LTRIM");
-	cmd << key << start << end;
+	cmd << key << (long)start << (long)end;
 
 	run(cmd);
 
@@ -323,7 +336,7 @@ RedisResponse
 Redis::lindex(RedisString key, int pos) {
 
 	RedisCommand cmd("LINDEX");
-	cmd << key << pos;
+	cmd << key << (long)pos;
 
 	run(cmd);
 
@@ -348,7 +361,7 @@ RedisResponse
 Redis::lrange(RedisString key, int start, int end) {
 
 	RedisCommand cmd("LRANGE");
-	cmd << key << start << end;
+	cmd << key << (long)start << (long)end;
 
 	run(cmd);
 
@@ -433,6 +446,47 @@ Redis::sdiffstore(RedisList keys) {
 	return read_integer();
 }
 
+/* zset commands */
+
+RedisResponse
+Redis::zadd(RedisString key, double score, RedisString member) {
+	RedisCommand cmd("ZADD");
+
+	cmd << key << score << member;
+	run(cmd);
+
+	return read_integer_as_bool();
+}
+RedisResponse
+Redis::zrem(RedisString key, RedisString member) {
+	RedisCommand cmd("ZREM");
+
+	cmd << key << member;
+	run(cmd);
+
+	return read_integer_as_bool();
+}
+
+RedisResponse
+Redis::zincrby(RedisString key, double score, RedisString member) {
+	RedisCommand cmd("ZINCRBY");
+
+	cmd << key << score << member;
+	run(cmd);
+
+	return read_double();
+}
+
+RedisResponse
+Redis::zscore(RedisString key, RedisString member) {
+	RedisCommand cmd("ZSCORE");
+
+	cmd << key << member;
+	run(cmd);
+
+	return read_double();
+}
+
 /* generic commands below */
 
 void
@@ -476,7 +530,7 @@ Redis::generic_increment(std::string keyword, RedisString key, int val) {
 	} else {
 		RedisCommand cmd(keyword + "BY");
 		cmd << key;
-		cmd << val;
+		cmd << (long)val;
 		run(cmd);
 	}
 
@@ -486,7 +540,7 @@ Redis::generic_increment(std::string keyword, RedisString key, int val) {
 void
 Redis::generic_list_item_action(string keyword, RedisString key, int n, RedisString val) {
 	RedisCommand cmd(keyword);
-	cmd << key << n << val;
+	cmd << key << (long)n << val;
 
 	run(cmd);
 }

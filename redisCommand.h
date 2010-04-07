@@ -23,6 +23,7 @@ public:
 
 	RedisCommand &operator<<(const char *s);
 	RedisCommand &operator<<(long l);
+	RedisCommand &operator<<(double d);
 	RedisCommand &operator<<(const RedisString s);
 
 	RedisString get();

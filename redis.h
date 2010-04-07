@@ -56,6 +56,10 @@ public:
 	RedisResponse sunionstore(RedisList keys);
 	RedisResponse sdiffstore(RedisList keys);
 
+	RedisResponse zadd(RedisString key, double score, RedisString member);
+	RedisResponse zrem(RedisString key, RedisString member);
+	RedisResponse zincrby(RedisString key, double score, RedisString member);
+	RedisResponse zscore(RedisString key, RedisString member);
 
 private:
 	void run(RedisCommand &c);
@@ -69,6 +73,7 @@ private:
 	
 	RedisResponse read_string();
 	RedisResponse read_integer();
+	RedisResponse read_double();
 	RedisResponse read_integer_as_bool();
 	RedisResponse read_status_code();
 	RedisResponse read_single_line();

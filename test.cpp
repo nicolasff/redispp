@@ -37,6 +37,10 @@ int main() {
 	RedisResponse resp_range = r.lrange("y", 0, -1);
 	cout << "lrange y 0 -1 gave me " << resp_range.size() << " items." << endl;
 
+	r.del("z");
+	r.zadd("z", 4.5, "lol");
+	RedisResponse r_zscore = r.zscore("z", "lol");
+	cout << "'zscore z lol' gave me a score of " << r_zscore.doubleVal() << endl;
 
 
 	return 0;

@@ -57,6 +57,15 @@ RedisResponse::setBool(bool b) {
 	return true;
 }
 
+bool
+RedisResponse::setDouble(double d) {
+	if(m_type != REDIS_DOUBLE) {
+		return false;
+	}
+	m_double = d;
+	return true;
+}
+
 void 
 RedisResponse::type(RedisResponseType t) {
 	m_type = t;
@@ -88,6 +97,11 @@ RedisResponse::value() const {
 bool
 RedisResponse::boolVal() const {
 	return m_bool;
+}
+
+double
+RedisResponse::doubleVal() const {
+	return m_double;
 }
 
 int
