@@ -44,6 +44,10 @@ public:
 
 	RedisResponse sadd(RedisString key, RedisString val);
 	RedisResponse srem(RedisString key, RedisString val);
+	RedisResponse spop(RedisString key);
+	RedisResponse scard(RedisString key);
+	RedisResponse sismember(RedisString key, RedisString val);
+	RedisResponse srandmember(RedisString key);
 
 
 private:

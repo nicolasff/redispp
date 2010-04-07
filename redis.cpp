@@ -374,13 +374,27 @@ Redis::srem(RedisString key, RedisString val) {
 }
 
 RedisResponse
-Redis::generic_set_key_value(string keyword, RedisString key, RedisString val) {
+Redis::spop(RedisString key) {
+	return generic_pop("SPOP", key);
+}
 
-	RedisCommand cmd(keyword);
-	cmd << key << val;
+RedisResponse
+Redis::scard(RedisString key) {
+
+	RedisCommand cmd("SCARD");
+	cmd << key;
 	run(cmd);
 
-	return read_integer_as_bool();
+	return read_integer();
+}
+RedisResponse
+Redis::sismember(RedisString key, RedisString val) {
+	return generic_set_key_value("SISMEMBER", key, val);
+}
+
+RedisResponse
+Redis::srandmember(RedisString key) {
+	return generic_pop("SRANDMEMBER", key);
 }
 
 
@@ -430,5 +444,15 @@ Redis::generic_list_item_action(string keyword, RedisString key, int n, RedisStr
 	cmd << key << n << val;
 
 	run(cmd);
+}
+
+RedisResponse
+Redis::generic_set_key_value(string keyword, RedisString key, RedisString val) {
+
+	RedisCommand cmd(keyword);
+	cmd << key << val;
+	run(cmd);
+
+	return read_integer_as_bool();
 }
 
