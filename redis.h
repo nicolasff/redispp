@@ -90,6 +90,11 @@ public:
 	RedisResponse hget(RedisString key, RedisString field);
 	RedisResponse hdel(RedisString key, RedisString field);
 	RedisResponse hexists(RedisString key, RedisString field);
+	RedisResponse hlen(RedisString key);
+	RedisResponse hkeys(RedisString key);
+	RedisResponse hvals(RedisString key);
+	RedisResponse hgetall(RedisString key);
+	RedisResponse hincrby(RedisString key, RedisString field, double d);
 
 
 private:
@@ -108,6 +113,7 @@ private:
 	RedisResponse generic_z_set_operation(std::string keyword, RedisString key, RedisList keys,
 		std::vector<double> weights, std::string aggregate);
 	bool generic_mset(std::string keyword, RedisList keys, RedisList vals);
+	RedisResponse generic_h_simple_list(std::string keyword, RedisString key);
 
 	
 	RedisResponse read_string();

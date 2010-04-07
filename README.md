@@ -77,6 +77,11 @@ This project aims to provide a stable a feature-complete C++ library for Redis.
 * hget
 * hdel
 * hexists
+* hlen
+* hkeys
+* hvals
+* hgetall
+* hincrby
 
 #### Functions not implemented
 
@@ -111,14 +116,6 @@ This project aims to provide a stable a feature-complete C++ library for Redis.
 * brpop
 * append
 * substr
-
---------------------
-
-* hlen
-* hkeys
-* hvals
-* hgetall
-* hincrby
 
 --------------------
 

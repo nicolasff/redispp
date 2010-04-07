@@ -739,6 +739,40 @@ Redis::hexists(RedisString key, RedisString field) {
 	return read_integer_as_bool();
 }
 
+RedisResponse
+Redis::hlen(RedisString key) {
+	RedisCommand cmd("HLEN");
+	cmd << key;
+
+	run(cmd);
+
+	return read_integer();
+}
+RedisResponse
+Redis::hkeys(RedisString key) {
+	return generic_h_simple_list("HKEYS", key);
+}
+
+RedisResponse
+Redis::hvals(RedisString key) {
+	return generic_h_simple_list("HVALS", key);
+}
+
+RedisResponse
+Redis::hgetall(RedisString key) {
+	return generic_h_simple_list("HGETALL", key);
+}
+
+RedisResponse
+Redis::hincrby(RedisString key, RedisString field, double d) {
+	RedisCommand cmd("HINCRBY");
+	cmd << key << field << d;
+
+	run(cmd);
+
+	return read_double();
+}
+
 /* generic commands below */
 
 RedisResponse
@@ -868,5 +902,15 @@ Redis::generic_mset(string keyword, RedisList keys, RedisList vals) {
 
 	run(cmd);
 	return true;
+}
+
+RedisResponse
+Redis::generic_h_simple_list(string keyword, RedisString key) {
+	RedisCommand cmd(keyword);
+	cmd << key;
+
+	run(cmd);
+
+	return read_multi_bulk();
 }
 
