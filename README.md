@@ -16,6 +16,9 @@ This project aims to provide a stable a feature-complete C++ library for Redis.
 * exists
 * randomkey
 * del
+* mget
+* expire
+* expireat
 
 --------------------
 
@@ -86,10 +89,7 @@ This project aims to provide a stable a feature-complete C++ library for Redis.
 * sort
 * rpoplpush
 * info
-* mget
 * monitor
-* expire
-* expireat
 * getset
 * slaveof
 * mset

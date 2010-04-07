@@ -234,15 +234,30 @@ Redis::del(RedisList keys) {
 	return read_integer();
 }
 
+RedisResponse
+Redis::mget(RedisList keys) {
+	generic_multi_parameter("MGET", keys);
+	return read_multi_bulk();
+}
+
+RedisResponse
+Redis::expire(RedisString key, long ttl) {
+	return generic_key_int_return_int("EXPIRE", key, ttl);
+}
+RedisResponse
+Redis::expireAt(RedisString key, long timestamp) {
+	return generic_key_int_return_int("EXPIREAT", key, timestamp);
+}
+
 RedisResponse 
 Redis::incr(RedisString key, int val) {
 
-	return generic_increment("INCR", key, val);
+	return generic_key_int_return_int("INCR", key, val, true);
 }
 RedisResponse 
 Redis::decr(RedisString key, int val) {
 
-	return generic_increment("DECR", key, val);
+	return generic_key_int_return_int("DECR", key, val, true);
 }
 RedisResponse
 Redis::rename(RedisString src, RedisString dst) {
@@ -684,18 +699,17 @@ Redis::generic_push(string keyword, RedisString key, RedisString val) {
 }
 
 RedisResponse
-Redis::generic_increment(std::string keyword, RedisString key, int val) {
+Redis::generic_key_int_return_int(std::string keyword, RedisString key, int val, bool addBy) {
 
-	if(val == 1) {
-		RedisCommand cmd(keyword);
-		cmd << key;
-		run(cmd);
-	} else {
-		RedisCommand cmd(keyword + "BY");
-		cmd << key;
-		cmd << (long)val;
-		run(cmd);
+	if(val > 1 && addBy) {
+		keyword = keyword + "BY";
 	}
+	RedisCommand cmd(keyword);
+	cmd << key;
+	if(!addBy || (val > 1 && addBy)) {
+		cmd << (long)val;
+	}
+	run(cmd);
 
 	return read_integer();
 }

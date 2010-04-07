@@ -30,6 +30,9 @@ public:
 	RedisResponse exists(RedisString key);
 	RedisResponse del(RedisString key);
 	RedisResponse del(RedisList key);
+	RedisResponse mget(RedisList keys);
+	RedisResponse expire(RedisString key, long ttl);
+	RedisResponse expireAt(RedisString key, long timestamp);
 
 	RedisResponse lpush(RedisString key, RedisString val);
 	RedisResponse rpush(RedisString key, RedisString val);
@@ -81,10 +84,11 @@ public:
 	RedisResponse zinter(RedisString key, RedisList keys, std::vector<double> weights);
 	RedisResponse zinter(RedisString key, RedisList keys, std::vector<double> weights, std::string aggregate);
 
+
 private:
 	void run(RedisCommand &c);
 
-	RedisResponse generic_increment(std::string keyword, RedisString key, int val);
+	RedisResponse generic_key_int_return_int(std::string keyword, RedisString key, int val, bool addBy = false);
 	RedisResponse generic_push(std::string keyword, RedisString key, RedisString val);
 	RedisResponse generic_pop(std::string keyword, RedisString key);
 	void          generic_list_item_action(std::string keyword, RedisString key, int n, RedisString val);
