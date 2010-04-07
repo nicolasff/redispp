@@ -65,6 +65,7 @@ public:
 	RedisResponse zrange(RedisString key, long start, long end, bool withscores = false);
 	RedisResponse zrevrange(RedisString key, long start, long end, bool withscores = false);
 	RedisResponse zcard(RedisString key);
+	RedisResponse zcount(RedisString key, long start, long end);
 
 private:
 	void run(RedisCommand &c);

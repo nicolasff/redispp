@@ -517,6 +517,11 @@ Redis::zcard(RedisString key) {
 	return generic_card("ZCARD", key);
 }
 
+RedisResponse
+Redis::zcount(RedisString key, long start, long end) {
+	return generic_zrange("ZCOUNT", key, start, end, false);
+}
+
 /* generic commands below */
 
 RedisResponse
