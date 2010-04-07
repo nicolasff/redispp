@@ -49,6 +49,9 @@ public:
 	RedisResponse sismember(RedisString key, RedisString val);
 	RedisResponse srandmember(RedisString key);
 	RedisResponse smove(RedisString src, RedisString dst, RedisString member);
+	RedisResponse sinter(RedisList keys);
+	RedisResponse sunion(RedisList keys);
+	RedisResponse sdiff(RedisList keys);
 
 
 private:
@@ -59,6 +62,7 @@ private:
 	RedisResponse generic_pop(std::string keyword, RedisString key);
 	void          generic_list_item_action(std::string keyword, RedisString key, int n, RedisString val);
 	RedisResponse generic_set_key_value(std::string keyword, RedisString key, RedisString val);
+	void          generic_multi_parameter(std::string keyword, RedisList &keys);
 	
 	RedisResponse read_string();
 	RedisResponse read_integer();

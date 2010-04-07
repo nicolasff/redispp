@@ -217,13 +217,7 @@ Redis::del(RedisString key) {
 RedisResponse
 Redis::del(RedisList keys) {
 
-	RedisCommand cmd("DEL");
-	RedisList::const_iterator key;
-	for(key = keys.begin(); key != keys.end(); key++) {
-		cmd << *key;
-	}
-	run(cmd);
-
+	generic_multi_parameter("DEL", keys);
 	return read_integer();
 }
 
@@ -406,6 +400,34 @@ Redis::smove(RedisString src, RedisString dst, RedisString member) {
 	run(cmd);
 	
 	return read_integer_as_bool();
+}
+
+RedisResponse
+Redis::sinter(RedisList keys) {
+
+	generic_multi_parameter("SINTER", keys);
+	return read_multi_bulk();
+}
+RedisResponse
+Redis::sunion(RedisList keys) {
+
+	generic_multi_parameter("SUNION", keys);
+	return read_multi_bulk();
+}
+RedisResponse
+Redis::sdiff(RedisList keys) {
+
+	generic_multi_parameter("SDIFF", keys);
+	return read_multi_bulk();
+}
+void
+Redis::generic_multi_parameter(string keyword, RedisList &keys) {
+	RedisCommand cmd(keyword);
+	RedisList::const_iterator key;
+	for(key = keys.begin(); key != keys.end(); key++) {
+		cmd << *key;
+	}
+	run(cmd);
 }
 
 

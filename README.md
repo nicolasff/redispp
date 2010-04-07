@@ -39,6 +39,9 @@ This project aims to provide a stable a feature-complete C++ library for Redis.
 * spop
 * srandmember
 * smove
+* sinter
+* sunion
+* sdiff
 
 #### Functions not implemented
 
@@ -56,11 +59,8 @@ This project aims to provide a stable a feature-complete C++ library for Redis.
 
 --------------------
 
-* sinter
 * sinterstore
-* sunion
 * sunionstore
-* sdiff
 * sdiffstore
 
 --------------------
