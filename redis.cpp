@@ -95,16 +95,38 @@ Redis::read_bool() {
 }
 
 RedisResponse
-Redis::read_int() {
-	string str = getline();
-	if(str[0] == ':') {
-		RedisResponse ret(REDIS_LONG);
-		ret.setLong(::atol(1+&str[0]));
-		return ret;
-	} else {
-		RedisResponse ret(REDIS_ERR);
-		return ret;
+Redis::read_status_code() {
+	RedisResponse ret(REDIS_BOOL);
+
+	std::string str = getline();
+	if(str[0] == '+') {
+		ret.setBool(true);
 	}
+	return ret;
+}
+RedisResponse
+Redis::read_single_line() {
+	RedisResponse ret(REDIS_ERR);
+
+	std::string str = getline();
+	if(str[0] == '+') {
+		RedisString s(&str[1]);
+		ret.type(REDIS_STRING);
+		ret.setString(s);
+	}
+	return ret;
+}
+
+RedisResponse
+Redis::read_integer() {
+	RedisResponse ret(REDIS_ERR);
+
+	std::string str = getline();
+	if(str[0] == ':') {
+		ret.type(REDIS_LONG);
+		ret.setLong(::atol(1+&str[0]));
+	}
+	return ret;
 }
 
 RedisResponse
@@ -116,6 +138,7 @@ Redis::get(RedisString key){
 
 	return read_string();
 }
+
 
 bool
 Redis::set(const char *key, const size_t key_len, const char *val, const size_t val_len){
@@ -157,6 +180,50 @@ Redis::decr(RedisString key, int val) {
 
 	return generic_increment("DECR", key, val);
 }
+RedisResponse
+Redis::rename(RedisString src, RedisString dst) {
+
+	RedisCommand cmd("RENAME");
+	cmd << src << dst;
+	run(cmd);
+
+	return read_status_code();
+}
+
+RedisResponse
+Redis::renameNx(RedisString src, RedisString dst) {
+
+	RedisCommand cmd("RENAMENX");
+	cmd << src << dst;
+	run(cmd);
+
+	return read_integer();
+}
+
+RedisResponse
+Redis::randomKey() {
+	RedisCommand cmd("RANDOMKEY");
+	run(cmd);
+
+	return read_single_line();
+}
+
+RedisResponse
+Redis::ttl(RedisString key) {
+	RedisCommand cmd("TTL");
+	cmd << key;
+	run(cmd);
+
+	return read_integer();
+}
+
+RedisResponse
+Redis::ping() {
+	RedisCommand cmd("PING");
+	run(cmd);
+
+	return read_status_code();
+}
 
 RedisResponse
 Redis::generic_increment(std::string keyword, RedisString key, int val) {
@@ -172,6 +239,6 @@ Redis::generic_increment(std::string keyword, RedisString key, int val) {
 		run(cmd);
 	}
 
-	return read_int();
+	return read_integer();
 }
 

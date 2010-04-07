@@ -4,7 +4,10 @@
 using namespace std;
 
 RedisResponse::RedisResponse(RedisResponseType t) :
-	m_type(t) {
+	m_type(t),
+	m_long(0),
+	m_bool(false)
+{
 
 }
 
@@ -45,6 +48,14 @@ RedisResponse::addZString(RedisString s, double score) {
 	return true;
 }
 
+bool
+RedisResponse::setBool(bool b) {
+	if(m_type != REDIS_BOOL) {
+		return false;
+	}
+	m_bool = b;
+}
+
 void 
 RedisResponse::type(RedisResponseType t) {
 	m_type = t;
@@ -71,5 +82,10 @@ long
 RedisResponse::value() const {
 
 	return m_long;
+}
+
+bool
+RedisResponse::boolVal() const {
+	return m_bool;
 }
 

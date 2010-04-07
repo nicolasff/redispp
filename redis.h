@@ -23,6 +23,11 @@ public:
 
 	RedisResponse incr(RedisString key, int val = 1);
 	RedisResponse decr(RedisString key, int val = 1);
+	RedisResponse rename(RedisString src, RedisString dst);
+	RedisResponse renameNx(RedisString src, RedisString dst);
+	RedisResponse randomKey();
+	RedisResponse ttl(RedisString key);
+	RedisResponse ping();
 
 	Redis& pipeline();
 
@@ -32,7 +37,10 @@ private:
 	RedisResponse generic_increment(std::string keyword, RedisString key, int val);
 	
 	RedisResponse read_string();
-	RedisResponse read_int();
+	RedisResponse read_integer();
+	RedisResponse read_status_code();
+	RedisResponse read_single_line();
+
 	bool read_bool();
 
 	std::string getline();
