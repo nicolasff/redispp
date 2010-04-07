@@ -23,6 +23,15 @@ int main() {
 		cout << "FAIL" << endl;
 	}
 
+	RedisResponse rllen = r.llen("y");
+	if(rllen.type() == REDIS_LONG) {
+		cout << "LLEN y = " << rllen.value() << endl;
+	} else {
+		cout << "FAIL" << endl;
+	}
+
+
+
 	return 0;
 }
 

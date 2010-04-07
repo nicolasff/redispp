@@ -240,6 +240,7 @@ Redis::ttl(RedisString key) {
 	return read_integer();
 }
 
+
 RedisResponse
 Redis::ping() {
 	RedisCommand cmd("PING");
@@ -255,6 +256,35 @@ Redis::lpush(RedisString key, RedisString val) {
 RedisResponse
 Redis::rpush(RedisString key, RedisString val) {
 	return generic_push("RPUSH", key, val);
+}
+
+RedisResponse
+Redis::llen(RedisString key) {
+	RedisCommand cmd("LLEN");
+	cmd << key;
+
+	run(cmd);
+
+	return read_integer();
+}
+
+RedisResponse
+Redis::lpop(RedisString key) {
+	return generic_pop("LPOP", key);
+}
+RedisResponse
+Redis::rpop(RedisString key) {
+	return generic_pop("RPOP", key);
+}
+
+RedisResponse
+Redis::generic_pop(string keyword, RedisString key){
+	RedisCommand cmd(keyword);
+
+	cmd << key;
+	run(cmd);
+
+	return read_string();
 }
 
 RedisResponse

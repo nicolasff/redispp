@@ -20,11 +20,13 @@ This project aims to provide a stable a feature-complete C++ library for Redis.
 
 * lpush
 * rpush
+* llen
+* lpop
+* rpop
 
 #### Functions not implemented
 
 * auth
-* echo
 * del
 * select
 * keys
@@ -35,16 +37,13 @@ This project aims to provide a stable a feature-complete C++ library for Redis.
 * bgrewriteaof
 * shutdown
 * move
+* type
 
 --------------------
 
-* lpop
-* rpop
-* llen
 * lindex
 * lrange
 * ltrim
-* type
 * lrem
 * lset
 
@@ -78,7 +77,6 @@ This project aims to provide a stable a feature-complete C++ library for Redis.
 * expireat
 * getset
 * slaveof
-* debug
 * mset
 * msetnx
 
