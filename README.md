@@ -15,6 +15,7 @@ This project aims to provide a stable a feature-complete C++ library for Redis.
 * setnx
 * exists
 * randomkey
+* del
 
 --------------------
 
@@ -27,7 +28,6 @@ This project aims to provide a stable a feature-complete C++ library for Redis.
 #### Functions not implemented
 
 * auth
-* del
 * select
 * keys
 * dbsize

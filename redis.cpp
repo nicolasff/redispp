@@ -182,14 +182,25 @@ Redis::exists(RedisString key) {
 	return read_integer_as_bool();
 }
 
-Redis&
-Redis::pipeline() {
+RedisResponse
+Redis::del(RedisString key) {
+	RedisCommand cmd("DEL");
+	cmd << key;
+	run(cmd);
 
-	if(!m_pipeline) {
-		m_pipeline = true;
-		// TODO: free.
-		m_cmds.clear();
+	return read_integer();
+}
+RedisResponse
+Redis::del(RedisList keys) {
+
+	RedisCommand cmd("DEL");
+	RedisList::const_iterator key;
+	for(key = keys.begin(); key != keys.end(); key++) {
+		cmd << *key;
 	}
+	run(cmd);
+
+	return read_integer();
 }
 
 RedisResponse 

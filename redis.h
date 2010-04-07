@@ -28,6 +28,8 @@ public:
 	RedisResponse ping();
 	RedisResponse setNx(RedisString src, RedisString dst);
 	RedisResponse exists(RedisString key);
+	RedisResponse del(RedisString key);
+	RedisResponse del(RedisList key);
 
 	RedisResponse lpush(RedisString key, RedisString val);
 	RedisResponse rpush(RedisString key, RedisString val);
@@ -36,8 +38,6 @@ public:
 	RedisResponse rpop(RedisString key);
 
 
-
-	Redis& pipeline();
 
 private:
 	void run(RedisCommand &c);
@@ -54,8 +54,6 @@ private:
 
 	std::string getline();
 	int m_fd;
-
-	bool m_pipeline;
 
 	std::list<std::pair<int, char*> > m_cmds;
 
