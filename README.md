@@ -61,6 +61,8 @@ This project aims to provide a stable a feature-complete C++ library for Redis.
 * zremrangebyrank
 * zrangebyscore
 * zremrangebyscore
+* zunion
+* zinter
 
 #### Functions not implemented
 
@@ -92,11 +94,6 @@ This project aims to provide a stable a feature-complete C++ library for Redis.
 * slaveof
 * mset
 * msetnx
-
---------------------
-
-* zunion
-* zinter
 
 --------------------
 

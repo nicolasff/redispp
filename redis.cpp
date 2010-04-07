@@ -542,6 +542,78 @@ Redis::zrangebyscore(RedisString key, long min, long max, long start, long end, 
 	return read_multi_bulk();
 }
 
+RedisResponse
+Redis::zunion(RedisString key, RedisList keys) {
+	vector<double> v;
+	return zunion(key, keys, v, "");
+}
+RedisResponse
+Redis::zunion(RedisString key, RedisList keys, string aggregate) {
+	vector<double> v;
+	return zunion(key, keys, v, aggregate);
+}
+RedisResponse
+Redis::zunion(RedisString key, RedisList keys, vector<double> weights) {
+	return zunion(key, keys, weights, "");
+}
+RedisResponse
+Redis::zunion(RedisString key, RedisList keys, vector<double> weights, string aggregate) {
+	return generic_z_set_operation("ZUNION", key, keys, weights, aggregate);
+}
+
+RedisResponse
+Redis::zinter(RedisString key, RedisList keys) {
+	vector<double> v;
+	return zunion(key, keys, v, "");
+}
+RedisResponse
+Redis::zinter(RedisString key, RedisList keys, string aggregate) {
+	vector<double> v;
+	return zunion(key, keys, v, aggregate);
+}
+RedisResponse
+Redis::zinter(RedisString key, RedisList keys, vector<double> weights) {
+	return zunion(key, keys, weights, "");
+}
+RedisResponse
+Redis::zinter(RedisString key, RedisList keys, vector<double> weights, string aggregate) {
+	return generic_z_set_operation("ZINTER", key, keys, weights, aggregate);
+}
+
+RedisResponse
+Redis::generic_z_set_operation(string keyword, RedisString key, RedisList keys,
+		vector<double> weights, string aggregate) {
+
+	if(weights.size() != 0 && keys.size() != weights.size()) {
+		return RedisResponse(REDIS_ERR);
+	}
+	RedisCommand cmd(keyword);
+	cmd << key << (long)keys.size();
+
+	RedisList::const_iterator i_key;
+	for(i_key = keys.begin(); i_key != keys.end(); i_key++) {
+		cmd << *i_key;
+	}
+	if(weights.size()) {
+
+		cmd << RedisString("WEIGHTS");
+
+		vector<double>::const_iterator w_key;
+		for(w_key = weights.begin(); w_key != weights.end(); w_key++) {
+			cmd << *w_key;
+		}
+	}
+
+	if(aggregate.size()) {
+		string s = "AGGREGATE " + aggregate;
+		cmd << RedisString(s.c_str());
+	}
+
+	run(cmd);
+
+	return read_integer();
+}
+
 /* generic commands below */
 
 RedisResponse

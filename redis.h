@@ -71,6 +71,16 @@ public:
 	RedisResponse zrangebyscore(RedisString key, long min, long max, bool withscores = false);
 	RedisResponse zrangebyscore(RedisString key, long min, long max, long start, long end, bool withscores = false);
 
+	RedisResponse zunion(RedisString key, RedisList keys);
+	RedisResponse zunion(RedisString key, RedisList keys, std::string aggregate);
+	RedisResponse zunion(RedisString key, RedisList keys, std::vector<double> weights);
+	RedisResponse zunion(RedisString key, RedisList keys, std::vector<double> weights, std::string aggregate);
+
+	RedisResponse zinter(RedisString key, RedisList keys);
+	RedisResponse zinter(RedisString key, RedisList keys, std::string aggregate);
+	RedisResponse zinter(RedisString key, RedisList keys, std::vector<double> weights);
+	RedisResponse zinter(RedisString key, RedisList keys, std::vector<double> weights, std::string aggregate);
+
 private:
 	void run(RedisCommand &c);
 
@@ -84,6 +94,8 @@ private:
 	RedisResponse generic_zrange(std::string keyword, RedisString key, long start, long end, bool withscores);
 	RedisResponse generic_z_start_end_int(std::string keyword, RedisString key, long start, long end);
 	RedisResponse generic_card(std::string keyword, RedisString key);
+	RedisResponse generic_z_set_operation(std::string keyword, RedisString key, RedisList keys,
+		std::vector<double> weights, std::string aggregate);
 	
 	RedisResponse read_string();
 	RedisResponse read_integer();
