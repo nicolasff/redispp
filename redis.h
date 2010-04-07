@@ -8,6 +8,8 @@
 #include "redisCommand.h"
 #include "redisResponse.h"
 
+typedef std::vector<RedisString> RedisList;
+
 class Redis {
 
 public:
@@ -15,12 +17,8 @@ public:
 
 	bool connect(std::string host, short port);
 	
-	
 	RedisResponse get(RedisString key);
-
-	bool set(const char *key, const size_t key_len, const char *val, const size_t val_len);
-	bool set(const std::string key, const std::string val);
-
+	RedisResponse set(RedisString key, RedisString val);
 	RedisResponse incr(RedisString key, int val = 1);
 	RedisResponse decr(RedisString key, int val = 1);
 	RedisResponse rename(RedisString src, RedisString dst);
@@ -43,8 +41,6 @@ private:
 	RedisResponse read_integer_as_bool();
 	RedisResponse read_status_code();
 	RedisResponse read_single_line();
-
-	bool read_bool();
 
 	std::string getline();
 	int m_fd;

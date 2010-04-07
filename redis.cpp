@@ -88,12 +88,6 @@ Redis::getline() {
 	return ret;
 }
 
-bool
-Redis::read_bool() {
-	std::string str = getline();
-	return (str == "+OK\r\n");
-}
-
 RedisResponse
 Redis::read_status_code() {
 	RedisResponse ret(REDIS_BOOL);
@@ -160,25 +154,14 @@ Redis::get(RedisString key){
 	return read_string();
 }
 
-
-bool
-Redis::set(const char *key, const size_t key_len, const char *val, const size_t val_len){
+RedisResponse 
+Redis::set(RedisString key, RedisString val) {
 	RedisCommand cmd("SET");
 
-	// convert arguments int RedisString
-	RedisString k, v;
-	k.insert(k.end(), key, key + key_len);
-	v.insert(v.end(), val, val + val_len);
-
-	// add the arguments to the command, and run.
-	cmd << k << v;
+	cmd << key << val;
 	run(cmd);
 
-	return read_bool();
-}
-bool 
-Redis::set(const std::string key, const std::string val) {
-	return set(key.c_str(), key.size(), val.c_str(), val.size());
+	return read_status_code();
 }
 
 RedisResponse

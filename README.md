@@ -30,6 +30,9 @@ This project aims to provide a stable a feature-complete C++ library for Redis.
 * bgrewriteaof
 * shutdown
 * move
+
+--------------------
+
 * lpush
 * rpush
 * lpop
@@ -39,7 +42,11 @@ This project aims to provide a stable a feature-complete C++ library for Redis.
 * lrange
 * ltrim
 * type
+* lrem
 * lset
+
+--------------------
+
 * sadd
 * srem
 * smove
@@ -53,11 +60,13 @@ This project aims to provide a stable a feature-complete C++ library for Redis.
 * sunionstore
 * sdiff
 * sdiffstore
+
+--------------------
+
 * sync
 * flushdb
 * flushall
 * sort
-* lrem
 * rpoplpush
 * info
 * mget
@@ -69,6 +78,9 @@ This project aims to provide a stable a feature-complete C++ library for Redis.
 * debug
 * mset
 * msetnx
+
+--------------------
+
 * zadd
 * zincrby
 * zrange
@@ -79,6 +91,14 @@ This project aims to provide a stable a feature-complete C++ library for Redis.
 * zrem
 * zscore
 * zremrangebyscore
+* zremrangebyrank
+* zrank
+* zrevrank
+* zunion
+* zinter
+
+--------------------
+
 * multi
 * exec
 * discard
@@ -86,21 +106,25 @@ This project aims to provide a stable a feature-complete C++ library for Redis.
 * brpop
 * append
 * substr
-* zrank
-* zrevrank
+
+--------------------
+
 * hset
 * hget
 * hdel
 * hlen
-* zremrangebyrank
-* zunion
-* zinter
 * hkeys
 * hvals
 * hgetall
 * hexists
-* config
 * hincrby
+
+--------------------
+
+* config
+
+--------------------
+
 * subscribe
 * unsubscribe
 * publish
