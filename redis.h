@@ -16,6 +16,13 @@ class Redis {
 public:
 	Redis();
 
+	static const int ERROR = -1;
+	static const int STRING = 1;
+	static const int LIST = 2;
+	static const int SET = 3;
+	static const int ZSET = 4;
+	static const int HASH = 5;
+
 	bool connect(std::string host, short port);
 	
 	RedisResponse auth(RedisString key);
@@ -31,6 +38,7 @@ public:
 	RedisResponse move(RedisString key, int index);
 	RedisResponse sort(RedisString key);
 	RedisResponse sort(RedisString key, RedisSortParams params);
+	RedisResponse type(RedisString key);
 
 	RedisResponse get(RedisString key);
 	RedisResponse set(RedisString key, RedisString val);
@@ -151,6 +159,7 @@ private:
 	RedisResponse read_multi_bulk();
 	RedisResponse read_queued();
 	RedisResponse read_info_reply();
+	RedisResponse read_type_reply();
 
 	std::string getline();
 	int m_fd;

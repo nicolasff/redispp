@@ -266,6 +266,36 @@ Redis::read_multi_bulk() {
 	}
 	return ret;
 }
+RedisResponse
+Redis::read_type_reply() {
+	RedisResponse ret = read_string();
+	RedisResponse err(REDIS_ERR);
+
+	if(ret.type() != REDIS_STRING) {
+		return err;
+	}
+
+	ret.type(REDIS_LONG);
+
+	string t = ret.str();
+	if(t == "+string") {
+		ret.setLong(Redis::STRING);
+		return ret;
+	} else if(t == "+list") {
+		ret.setLong(Redis::LIST);
+		return ret;
+	} else if(t == "+set") {
+		ret.setLong(Redis::SET);
+		return ret;
+	} else if(t == "+zset") {
+		ret.setLong(Redis::ZSET);
+		return ret;
+	} else if(t == "+hash") {
+		ret.setLong(Redis::HASH);
+		return ret;
+	}
+	return err;
+}
 
 /* actual redis commands */
 
@@ -354,6 +384,12 @@ Redis::sort(RedisString key, RedisSortParams params) {
 	return run(cmd, &Redis::read_multi_bulk);
 }
 
+RedisResponse
+Redis::type(RedisString key) {
+	RedisCommand cmd("TYPE");
+	cmd << key;
+	return run(cmd, &Redis::read_type_reply);
+}
 
 RedisResponse
 Redis::get(RedisString key){

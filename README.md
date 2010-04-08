@@ -38,6 +38,7 @@ This project aims to provide a stable a feature-complete C++ library for Redis.
 * bgrewriteaof
 * move
 * sort
+* type
 
 --------------------
 
@@ -102,10 +103,6 @@ This project aims to provide a stable a feature-complete C++ library for Redis.
 * hincrby
 
 #### Functions not implemented
-
-* type
-
---------------------
 
 * append
 * substr
