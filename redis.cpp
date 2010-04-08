@@ -306,6 +306,29 @@ Redis::lastsave() {
 	RedisCommand cmd("LASTSAVE");
 	return run(cmd, &Redis::read_integer);
 }
+RedisResponse
+Redis::flushdb() {
+	RedisCommand cmd("FLUSHDB");
+	return run(cmd, &Redis::read_status_code);
+}
+
+RedisResponse
+Redis::flushall() {
+	RedisCommand cmd("FLUSHALL");
+	return run(cmd, &Redis::read_status_code);
+}
+RedisResponse
+Redis::save() {
+	RedisCommand cmd("SAVE");
+	return run(cmd, &Redis::read_status_code);
+}
+
+RedisResponse
+Redis::bgsave() {
+	RedisCommand cmd("BGSAVE");
+	return run(cmd, &Redis::read_status_code);
+}
+
 
 RedisResponse
 Redis::get(RedisString key){

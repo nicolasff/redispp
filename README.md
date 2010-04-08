@@ -25,11 +25,16 @@ This project aims to provide a stable a feature-complete C++ library for Redis.
 * info
 * multi
 * exec
+* discard
 * auth
 * select
 * keys
 * dbsize
 * lastsave
+* flushdb
+* flushall
+* save
+* bgsave
 
 --------------------
 
@@ -93,8 +98,6 @@ This project aims to provide a stable a feature-complete C++ library for Redis.
 
 #### Functions not implemented
 
-* save
-* bgsave
 * bgrewriteaof
 * shutdown
 * move
@@ -103,14 +106,10 @@ This project aims to provide a stable a feature-complete C++ library for Redis.
 --------------------
 
 * sync
-* flushdb
-* flushall
 * sort
-* slaveof
 
 --------------------
 
-* discard
 * blpop
 * brpop
 * append

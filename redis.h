@@ -22,6 +22,10 @@ public:
 	RedisResponse keys(RedisString pattern);
 	RedisResponse dbsize(int index);
 	RedisResponse lastsave();
+	RedisResponse flushdb();
+	RedisResponse flushall();
+	RedisResponse save();
+	RedisResponse bgsave();
 
 	RedisResponse get(RedisString key);
 	RedisResponse set(RedisString key, RedisString val);
