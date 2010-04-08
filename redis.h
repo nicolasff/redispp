@@ -24,7 +24,7 @@ public:
 	static const int ZSET = 4;
 	static const int HASH = 5;
 
-	bool connect(std::string host, short port);
+	bool connect(std::string host = "127.0.0.1", short port = 6379);
 	
 	Response auth(Buffer key);
 	Response select(int index);

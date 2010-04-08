@@ -1,13 +1,58 @@
 #include "redis.h"
 #include <iostream>
 
+int tests_passed = 0;
+int tests_failed = 0;
+
+#define assert(cond) do {if(!(cond)) { \
+		cout << "F"; \
+		cout << endl << "Test failed at line " << __LINE__ << endl; \
+		tests_failed++; \
+		cerr.flush(); \
+		} else { \
+		cout << ".";\
+		tests_passed++; \
+		}\
+		cout.flush(); \
+		} while(0)
+
 using namespace std;
+
+void
+testPing(redis::Client &redis) {
+
+	redis::Response r = redis.ping();
+	assert(r.type() == REDIS_BOOL);
+	assert(r.boolVal() == true);
+}
+void
+test1000(redis::Client &redis) {
+	char buf[1000];
+	fill(buf, buf + sizeof(buf), 'A');
+
+	redis::Response rSet = redis.set("x", redis::Buffer(buf, sizeof(buf)));
+	assert(rSet.type() == REDIS_BOOL && rSet.boolVal() == true);
+
+	redis::Response rGet = redis.get("x");
+	assert(rGet.type() == REDIS_STRING && rGet.str() == string(buf, 1000));
+}
 
 int main() {
 
 	redis::Client r;
 
-	r.connect("127.0.0.1", 6379);
+	r.connect(); // default settings
+
+	testPing(r);
+	test1000(r);
+
+
+	cout << endl << tests_passed << " tests passed, " << tests_failed << " failed." << endl;
+
+	return 0;
+}
+	/*
+
 	cout << "set('x', 'hello world'): " << (r.set("x", "hello world").boolVal() ? "OK": "FAIL") << endl;
 
 	redis::Response resp = r.get("x");
@@ -50,7 +95,5 @@ int main() {
 	cout << "'zrange z 0 1000 WITHSCORES' gave me " << r_zrange_withscores.size() << " items." << endl;
 
 	r.info();
-
-	return 0;
-}
+	*/
 
