@@ -1,4 +1,4 @@
-This project aims to provide a stable a feature-complete C++ library for Redis.
+This project aims to provide a stable and feature-complete C++ library for Redis.
 
 #### Functions implemented
 
