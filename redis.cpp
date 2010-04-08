@@ -392,6 +392,20 @@ Redis::type(RedisString key) {
 }
 
 RedisResponse
+Redis::append(RedisString key, RedisString padding) {
+	RedisCommand cmd("APPEND");
+	cmd << key << padding;
+	return run(cmd, &Redis::read_integer);
+
+}
+RedisResponse
+Redis::substr(RedisString key, int start, int end) {
+	RedisCommand cmd("SUBSTR");
+	cmd << key << (long)start << (long)end;
+	return run(cmd, &Redis::read_string);
+}
+
+RedisResponse
 Redis::get(RedisString key){
 	RedisCommand cmd("GET");
 

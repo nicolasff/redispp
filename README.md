@@ -39,6 +39,8 @@ This project aims to provide a stable a feature-complete C++ library for Redis.
 * move
 * sort
 * type
+* append
+* substr
 
 --------------------
 
@@ -103,11 +105,6 @@ This project aims to provide a stable a feature-complete C++ library for Redis.
 * hincrby
 
 #### Functions not implemented
-
-* append
-* substr
-
---------------------
 
 * config
 

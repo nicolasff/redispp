@@ -39,6 +39,8 @@ public:
 	RedisResponse sort(RedisString key);
 	RedisResponse sort(RedisString key, RedisSortParams params);
 	RedisResponse type(RedisString key);
+	RedisResponse append(RedisString key, RedisString padding);
+	RedisResponse substr(RedisString key, int start, int end);
 
 	RedisResponse get(RedisString key);
 	RedisResponse set(RedisString key, RedisString val);
