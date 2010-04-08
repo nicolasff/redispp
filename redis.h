@@ -7,6 +7,7 @@
 #include <vector>
 #include "redisCommand.h"
 #include "redisResponse.h"
+#include "redisSortParams.h"
 
 class Redis {
 
@@ -28,6 +29,8 @@ public:
 	RedisResponse bgsave();
 	RedisResponse bgrewriteaof();
 	RedisResponse move(RedisString key, int index);
+	RedisResponse sort(RedisString key);
+	RedisResponse sort(RedisString key, RedisSortParams params);
 
 	RedisResponse get(RedisString key);
 	RedisResponse set(RedisString key, RedisString val);

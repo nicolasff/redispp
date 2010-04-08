@@ -1,5 +1,4 @@
 #include "redis.h"
-#include "redisCommand.h"
 
 #include <iostream>
 
@@ -340,6 +339,19 @@ Redis::move(RedisString key, int index) {
 	RedisCommand cmd("MOVE");
 	cmd << key << (long)index;
 	return run(cmd, &Redis::read_integer_as_bool);
+}
+
+RedisResponse
+Redis::sort(RedisString key) {
+	RedisCommand cmd("SORT");
+	cmd << key;
+	return run(cmd, &Redis::read_multi_bulk);
+}
+
+RedisResponse
+Redis::sort(RedisString key, RedisSortParams params) {
+	RedisCommand cmd = params.buildCommand(key);
+	return run(cmd, &Redis::read_multi_bulk);
 }
 
 
