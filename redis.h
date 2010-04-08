@@ -17,6 +17,10 @@ public:
 
 	bool connect(std::string host, short port);
 	
+	RedisResponse auth(RedisString key);
+	RedisResponse select(int index);
+	RedisResponse keys(RedisString pattern);
+
 	RedisResponse get(RedisString key);
 	RedisResponse set(RedisString key, RedisString val);
 	RedisResponse incr(RedisString key, int val = 1);

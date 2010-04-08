@@ -24,6 +24,9 @@ This project aims to provide a stable a feature-complete C++ library for Redis.
 * info
 * multi
 * exec
+* auth
+* select
+* keys
 
 --------------------
 
@@ -87,9 +90,6 @@ This project aims to provide a stable a feature-complete C++ library for Redis.
 
 #### Functions not implemented
 
-* auth
-* select
-* keys
 * dbsize
 * lastsave
 * save

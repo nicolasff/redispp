@@ -268,6 +268,32 @@ Redis::read_multi_bulk() {
 	return ret;
 }
 
+/* actual redis commands */
+
+RedisResponse
+Redis::auth(RedisString key) {
+	RedisCommand cmd("AUTH");
+
+	cmd << key;
+	return run(cmd, &Redis::read_status_code);
+}
+
+RedisResponse
+Redis::select(int index) {
+	RedisCommand cmd("SELECT");
+
+	cmd << (long)index;
+	return run(cmd, &Redis::read_status_code);
+}
+
+RedisResponse
+Redis::keys(RedisString pattern) {
+	RedisCommand cmd("KEYS");
+
+	cmd << pattern;
+	return run(cmd, &Redis::read_multi_bulk);
+}
+
 RedisResponse
 Redis::get(RedisString key){
 	RedisCommand cmd("GET");
