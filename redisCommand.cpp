@@ -5,41 +5,26 @@
 #include <string.h>
 
 using namespace std;
-RedisString::RedisString() : vector<char>() {
 
-}
-RedisString::RedisString(std::string &s) : vector<char>() {
+namespace redis {
 
-	insert(end(), s.begin(), s.end());
-}
-RedisString::RedisString(const char *s) : vector<char>() {
-
-	int l = ::strlen(s);
-	insert(end(), s, s+l);
-}
-
-RedisString::RedisString(const char *s, size_t sz) : vector<char>() {
-
-	insert(end(), s, s+sz);
-}
-
-RedisCommand::RedisCommand(string keyword) {
+Command::Command(string keyword) {
 	
-	RedisString s;
+	Buffer s;
 	s.insert(s.end(), keyword.begin(), keyword.end());
 	m_elements.push_back(s);
 }
 
-RedisCommand &
-RedisCommand::operator<<(const RedisString s) {
+Command &
+Command::operator<<(const Buffer s) {
 	m_elements.push_back(s);
 
 	return *this;
 }
 
 // TODO: refactor the operator<< for numeric types.
-RedisCommand&
-RedisCommand::operator<<(long l) {
+Command&
+Command::operator<<(long l) {
 
 	// copy long value into a string stream
 	stringstream ss;
@@ -47,7 +32,7 @@ RedisCommand::operator<<(long l) {
 	string str = ss.str();
 
 	// copy string stream into a char* buffer
-	RedisString s;
+	Buffer s;
 	s.insert(s.end(), str.begin(), str.end());
 
 	// add to the list of elements
@@ -56,8 +41,8 @@ RedisCommand::operator<<(long l) {
 	return *this;
 }
 
-RedisCommand&
-RedisCommand::operator<<(double d) {
+Command&
+Command::operator<<(double d) {
 
 	// copy long value into a string stream
 	stringstream ss;
@@ -65,7 +50,7 @@ RedisCommand::operator<<(double d) {
 	string str = ss.str();
 
 	// copy string stream into a char* buffer
-	RedisString s;
+	Buffer s;
 	s.insert(s.end(), str.begin(), str.end());
 
 	// add to the list of elements
@@ -74,10 +59,10 @@ RedisCommand::operator<<(double d) {
 	return *this;
 }
 
-RedisString
-RedisCommand::get() {
+Buffer
+Command::get() {
 
-	RedisString ret;
+	Buffer ret;
 
 	stringstream ss_count;
 	ss_count << "*" << m_elements.size() << "\r\n";
@@ -88,7 +73,7 @@ RedisCommand::get() {
 
 
 	// add each element, preceded by its size.
-	list<RedisString>::const_iterator i;
+	list<Buffer>::const_iterator i;
 	for(i = m_elements.begin(); i != m_elements.end(); i++) {
 		// add "size" size followed by \r\n
 		stringstream ss_size;
@@ -104,3 +89,5 @@ RedisCommand::get() {
 
 	return ret;
 }
+}
+

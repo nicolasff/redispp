@@ -9,22 +9,23 @@
 typedef enum {REDIS_ERR, REDIS_LONG, REDIS_STRING, REDIS_BOOL, REDIS_INFO_MAP,
 	REDIS_DOUBLE, REDIS_LIST, REDIS_ZSET, REDIS_QUEUED} RedisResponseType;
 
-class RedisResponse {
+namespace redis {
+class Response {
 
 public:
-	RedisResponse(RedisResponseType t);
-	bool setString(RedisString s);
+	Response(RedisResponseType t);
+	bool setString(Buffer s);
 	bool setLong(long l);
 	bool setBool(bool b);
 	bool setDouble(double d);
-	bool addString(RedisString s);
+	bool addString(Buffer s);
 	bool addString(std::string key, std::string val);
-	bool addZString(RedisString s, double score);
+	bool addZString(Buffer s, double score);
 
 	void type(RedisResponseType t);
 	RedisResponseType type() const;
 
-	RedisString string() const;
+	Buffer string() const;
 	std::string str() const;
 	long value() const;
 	bool boolVal() const;
@@ -39,11 +40,12 @@ private:
 	long m_long;
 	bool m_bool;
 	double m_double;
-	RedisString m_str;
-	std::vector<RedisString> m_array;
-	std::vector<std::pair<double, RedisString> > m_zarray;
+	Buffer m_str;
+	std::vector<Buffer> m_array;
+	std::vector<std::pair<double, Buffer> > m_zarray;
 	RedisInfoMap m_map;
 };
+}
 
 #endif /* REDIS_RESPONSE_H */
 

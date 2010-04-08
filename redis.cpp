@@ -10,13 +10,14 @@
 
 using namespace std;
 
-Redis::Redis() :
+namespace redis {
+Client::Client() :
 	m_multi(false),
 	m_pipeline(false) {
 }
 
 bool 
-Redis::connect(std::string host, short port) {
+Client::connect(std::string host, short port) {
 	int fd = socket(AF_INET, SOCK_STREAM, 0);
 	if(!fd) {
 		return false;
@@ -40,24 +41,24 @@ Redis::connect(std::string host, short port) {
 }
 
 void
-Redis::run(RedisCommand &c) {
+Client::run(Command &c) {
 
-	RedisString cmd = c.get();
+	Buffer cmd = c.get();
 
 	int ret = write(m_fd, &cmd[0], cmd.size());
 	(void)ret; // TODO: check return value.
 }
 
-RedisResponse
-Redis::run(RedisCommand &c, ResponseReader fun) {
+Response
+Client::run(Command &c, ResponseReader fun) {
 
 	if(m_pipeline) { // just enqueue the request
 		m_readers.push_back(fun); // remember the reading fun.
 
 		// concat command
-		RedisString cmd = c.get();
+		Buffer cmd = c.get();
 		m_cmd.insert(m_cmd.end(), cmd.begin(), cmd.end());
-		return RedisResponse(REDIS_QUEUED);
+		return Response(REDIS_QUEUED);
 	}
 	// otherwise, exec
 	run(c);
@@ -71,7 +72,7 @@ Redis::run(RedisCommand &c, ResponseReader fun) {
 }
 
 void
-Redis::discard() {
+Client::discard() {
 	m_multi = false;
 	m_pipeline = false;
 	m_cmd.clear();
@@ -80,7 +81,7 @@ Redis::discard() {
 
 
 bool
-Redis::multi() {
+Client::multi() {
 	if(m_multi || m_pipeline) {
 		return false;
 	}
@@ -89,7 +90,7 @@ Redis::multi() {
 }
 
 bool
-Redis::pipeline() {
+Client::pipeline() {
 	if(m_multi || m_pipeline) {
 		return false;
 	}
@@ -97,12 +98,12 @@ Redis::pipeline() {
 	return true;
 }
 
-vector<RedisResponse>
-Redis::exec() {
-	vector<RedisResponse> ret;
+vector<Response>
+Client::exec() {
+	vector<Response> ret;
 
 	if(m_multi) {
-		RedisCommand cmd("EXEC");
+		Command cmd("EXEC");
 		run(cmd);
 	} else if (m_pipeline) {
 		int ret = write(m_fd, &m_cmd[0], m_cmd.size());
@@ -112,7 +113,7 @@ Redis::exec() {
 	// read back each response
 	vector<ResponseReader>::const_iterator funptr;
 	for(funptr = m_readers.begin(); funptr != m_readers.end(); funptr++) {
-		RedisResponse resp = (this->**funptr)();
+		Response resp = (this->**funptr)();
 		ret.push_back(resp);
 	}
 
@@ -122,10 +123,10 @@ Redis::exec() {
 	return ret;
 }
 
-RedisResponse
-Redis::read_string() {
+Response
+Client::read_string() {
 
-	RedisResponse ret(REDIS_ERR);
+	Response ret(REDIS_ERR);
 
 	std::string str = getline();
 	if(str[0] == '$') {
@@ -138,7 +139,7 @@ Redis::read_string() {
 		char *buf = new char[sz + 2];
 		if(sz) {
 			read(m_fd, buf, sz + 2);
-			RedisString s;
+			Buffer s;
 			s.insert(s.end(), buf, buf+sz);
 			// set string.
 			ret.type(REDIS_STRING);
@@ -151,7 +152,7 @@ Redis::read_string() {
 }
 
 std::string
-Redis::getline() {
+Client::getline() {
 
 	char c;
 	string ret;
@@ -164,9 +165,9 @@ Redis::getline() {
 	return ret;
 }
 
-RedisResponse
-Redis::read_status_code() {
-	RedisResponse ret(REDIS_BOOL);
+Response
+Client::read_status_code() {
+	Response ret(REDIS_BOOL);
 
 	std::string str = getline();
 	if(str[0] == '+') {
@@ -174,22 +175,22 @@ Redis::read_status_code() {
 	}
 	return ret;
 }
-RedisResponse
-Redis::read_single_line() {
-	RedisResponse ret(REDIS_ERR);
+Response
+Client::read_single_line() {
+	Response ret(REDIS_ERR);
 
 	std::string str = getline();
 	if(str[0] == '+') {
-		RedisString s(&str[1]);
+		Buffer s(&str[1]);
 		ret.type(REDIS_STRING);
 		ret.setString(s);
 	}
 	return ret;
 }
 
-RedisResponse
-Redis::read_queued() {
-	RedisResponse ret(REDIS_ERR);
+Response
+Client::read_queued() {
+	Response ret(REDIS_ERR);
 
 	std::string str = getline();
 	if(str == "+QUEUED") {
@@ -198,9 +199,9 @@ Redis::read_queued() {
 	return ret;
 }
 
-RedisResponse
-Redis::read_integer() {
-	RedisResponse ret(REDIS_ERR);
+Response
+Client::read_integer() {
+	Response ret(REDIS_ERR);
 
 	std::string str = getline();
 	if(str[0] == ':') {
@@ -210,9 +211,9 @@ Redis::read_integer() {
 	return ret;
 }
 
-RedisResponse
-Redis::read_double() {
-	RedisResponse ret = read_string();
+Response
+Client::read_double() {
+	Response ret = read_string();
 	if(ret.type() != REDIS_STRING) {
 		return ret;
 	}
@@ -226,9 +227,9 @@ Redis::read_double() {
 /**
  * Reads :1 as true, :0 as false.
  */
-RedisResponse
-Redis::read_integer_as_bool() {
-	RedisResponse ret(REDIS_ERR);
+Response
+Client::read_integer_as_bool() {
+	Response ret(REDIS_ERR);
 
 	std::string str = getline();
 	if(str[0] == ':') {
@@ -244,10 +245,10 @@ Redis::read_integer_as_bool() {
 	return ret;
 }
 
-RedisResponse
-Redis::read_multi_bulk() {
-	RedisResponse err(REDIS_ERR);
-	RedisResponse ret(REDIS_LIST);
+Response
+Client::read_multi_bulk() {
+	Response err(REDIS_ERR);
+	Response ret(REDIS_LIST);
 
 	std::string str = getline();
 	if(str[0] != '*') {
@@ -258,7 +259,7 @@ Redis::read_multi_bulk() {
 		return ret;
 	}
 	for(long i = 0; i < count; ++i) {
-		RedisResponse s = read_string();
+		Response s = read_string();
 		if(s.type() != REDIS_STRING) {
 			return err;
 		}
@@ -266,10 +267,10 @@ Redis::read_multi_bulk() {
 	}
 	return ret;
 }
-RedisResponse
-Redis::read_type_reply() {
-	RedisResponse ret = read_string();
-	RedisResponse err(REDIS_ERR);
+Response
+Client::read_type_reply() {
+	Response ret = read_string();
+	Response err(REDIS_ERR);
 
 	if(ret.type() != REDIS_STRING) {
 		return err;
@@ -279,19 +280,19 @@ Redis::read_type_reply() {
 
 	string t = ret.str();
 	if(t == "+string") {
-		ret.setLong(Redis::STRING);
+		ret.setLong(Client::STRING);
 		return ret;
 	} else if(t == "+list") {
-		ret.setLong(Redis::LIST);
+		ret.setLong(Client::LIST);
 		return ret;
 	} else if(t == "+set") {
-		ret.setLong(Redis::SET);
+		ret.setLong(Client::SET);
 		return ret;
 	} else if(t == "+zset") {
-		ret.setLong(Redis::ZSET);
+		ret.setLong(Client::ZSET);
 		return ret;
 	} else if(t == "+hash") {
-		ret.setLong(Redis::HASH);
+		ret.setLong(Client::HASH);
 		return ret;
 	}
 	return err;
@@ -299,213 +300,213 @@ Redis::read_type_reply() {
 
 /* actual redis commands */
 
-RedisResponse
-Redis::auth(RedisString key) {
-	RedisCommand cmd("AUTH");
+Response
+Client::auth(Buffer key) {
+	Command cmd("AUTH");
 
 	cmd << key;
-	return run(cmd, &Redis::read_status_code);
+	return run(cmd, &Client::read_status_code);
 }
 
-RedisResponse
-Redis::select(int index) {
-	RedisCommand cmd("SELECT");
+Response
+Client::select(int index) {
+	Command cmd("SELECT");
 
 	cmd << (long)index;
-	return run(cmd, &Redis::read_status_code);
+	return run(cmd, &Client::read_status_code);
 }
 
-RedisResponse
-Redis::keys(RedisString pattern) {
-	RedisCommand cmd("KEYS");
+Response
+Client::keys(Buffer pattern) {
+	Command cmd("KEYS");
 
 	cmd << pattern;
-	return run(cmd, &Redis::read_multi_bulk);
+	return run(cmd, &Client::read_multi_bulk);
 }
-RedisResponse
-Redis::dbsize(int index) {
-	RedisCommand cmd("DBSIZE");
+Response
+Client::dbsize(int index) {
+	Command cmd("DBSIZE");
 
 	cmd << (long)index;
-	return run(cmd, &Redis::read_integer);
+	return run(cmd, &Client::read_integer);
 }
 
-RedisResponse
-Redis::lastsave() {
-	RedisCommand cmd("LASTSAVE");
-	return run(cmd, &Redis::read_integer);
+Response
+Client::lastsave() {
+	Command cmd("LASTSAVE");
+	return run(cmd, &Client::read_integer);
 }
-RedisResponse
-Redis::flushdb() {
-	RedisCommand cmd("FLUSHDB");
-	return run(cmd, &Redis::read_status_code);
-}
-
-RedisResponse
-Redis::flushall() {
-	RedisCommand cmd("FLUSHALL");
-	return run(cmd, &Redis::read_status_code);
-}
-RedisResponse
-Redis::save() {
-	RedisCommand cmd("SAVE");
-	return run(cmd, &Redis::read_status_code);
+Response
+Client::flushdb() {
+	Command cmd("FLUSHDB");
+	return run(cmd, &Client::read_status_code);
 }
 
-RedisResponse
-Redis::bgsave() {
-	RedisCommand cmd("BGSAVE");
-	return run(cmd, &Redis::read_status_code);
+Response
+Client::flushall() {
+	Command cmd("FLUSHALL");
+	return run(cmd, &Client::read_status_code);
+}
+Response
+Client::save() {
+	Command cmd("SAVE");
+	return run(cmd, &Client::read_status_code);
 }
 
-RedisResponse
-Redis::bgrewriteaof() {
-	RedisCommand cmd("BGREWRITEAOF");
-	return run(cmd, &Redis::read_status_code);
+Response
+Client::bgsave() {
+	Command cmd("BGSAVE");
+	return run(cmd, &Client::read_status_code);
 }
 
-RedisResponse
-Redis::move(RedisString key, int index) {
-	RedisCommand cmd("MOVE");
+Response
+Client::bgrewriteaof() {
+	Command cmd("BGREWRITEAOF");
+	return run(cmd, &Client::read_status_code);
+}
+
+Response
+Client::move(Buffer key, int index) {
+	Command cmd("MOVE");
 	cmd << key << (long)index;
-	return run(cmd, &Redis::read_integer_as_bool);
+	return run(cmd, &Client::read_integer_as_bool);
 }
 
-RedisResponse
-Redis::sort(RedisString key) {
-	RedisCommand cmd("SORT");
+Response
+Client::sort(Buffer key) {
+	Command cmd("SORT");
 	cmd << key;
-	return run(cmd, &Redis::read_multi_bulk);
+	return run(cmd, &Client::read_multi_bulk);
 }
 
-RedisResponse
-Redis::sort(RedisString key, RedisSortParams params) {
-	RedisCommand cmd = params.buildCommand(key);
-	return run(cmd, &Redis::read_multi_bulk);
+Response
+Client::sort(Buffer key, SortParams params) {
+	Command cmd = params.buildCommand(key);
+	return run(cmd, &Client::read_multi_bulk);
 }
 
-RedisResponse
-Redis::type(RedisString key) {
-	RedisCommand cmd("TYPE");
+Response
+Client::type(Buffer key) {
+	Command cmd("TYPE");
 	cmd << key;
-	return run(cmd, &Redis::read_type_reply);
+	return run(cmd, &Client::read_type_reply);
 }
 
-RedisResponse
-Redis::append(RedisString key, RedisString padding) {
-	RedisCommand cmd("APPEND");
+Response
+Client::append(Buffer key, Buffer padding) {
+	Command cmd("APPEND");
 	cmd << key << padding;
-	return run(cmd, &Redis::read_integer);
+	return run(cmd, &Client::read_integer);
 
 }
-RedisResponse
-Redis::substr(RedisString key, int start, int end) {
-	RedisCommand cmd("SUBSTR");
+Response
+Client::substr(Buffer key, int start, int end) {
+	Command cmd("SUBSTR");
 	cmd << key << (long)start << (long)end;
-	return run(cmd, &Redis::read_string);
+	return run(cmd, &Client::read_string);
 }
-RedisResponse
-Redis::config(RedisString key, RedisString field) {
-	RedisCommand cmd("CONFIG");
-	cmd << key << RedisString("GET") << field;
-	return run(cmd, &Redis::read_multi_bulk);
+Response
+Client::config(Buffer key, Buffer field) {
+	Command cmd("CONFIG");
+	cmd << key << Buffer("GET") << field;
+	return run(cmd, &Client::read_multi_bulk);
 }
-RedisResponse
-Redis::config(RedisString key, RedisString field, RedisString val) {
-	RedisCommand cmd("CONFIG");
-	cmd << key << RedisString("SET") << field << val;
-	return run(cmd, &Redis::read_string);
+Response
+Client::config(Buffer key, Buffer field, Buffer val) {
+	Command cmd("CONFIG");
+	cmd << key << Buffer("SET") << field << val;
+	return run(cmd, &Client::read_string);
 }
 
-RedisResponse
-Redis::get(RedisString key){
-	RedisCommand cmd("GET");
+Response
+Client::get(Buffer key){
+	Command cmd("GET");
 
 	cmd << key;
-	return run(cmd, &Redis::read_string);
+	return run(cmd, &Client::read_string);
 }
 
-RedisResponse 
-Redis::set(RedisString key, RedisString val) {
-	RedisCommand cmd("SET");
+Response
+Client::set(Buffer key, Buffer val) {
+	Command cmd("SET");
 
 	cmd << key << val;
-	return run(cmd, &Redis::read_status_code);
+	return run(cmd, &Client::read_status_code);
 }
 
-RedisResponse
-Redis::getset(RedisString key, RedisString val) {
-	RedisCommand cmd("GETSET");
+Response
+Client::getset(Buffer key, Buffer val) {
+	Command cmd("GETSET");
 
 	cmd << key << val;
-	return run(cmd, &Redis::read_string);
+	return run(cmd, &Client::read_string);
 }
 
-RedisResponse
-Redis::setNx(RedisString key, RedisString val) {
-	RedisCommand cmd("SETNX");
+Response
+Client::setNx(Buffer key, Buffer val) {
+	Command cmd("SETNX");
 	cmd << key << val;
-	return run(cmd, &Redis::read_integer_as_bool);
+	return run(cmd, &Client::read_integer_as_bool);
 }
 
-RedisResponse
-Redis::exists(RedisString key) {
-	RedisCommand cmd("EXISTS");
+Response
+Client::exists(Buffer key) {
+	Command cmd("EXISTS");
 	cmd << key;
-	return run(cmd, &Redis::read_integer_as_bool);
+	return run(cmd, &Client::read_integer_as_bool);
 }
 
-RedisResponse
-Redis::del(RedisString key) {
-	RedisCommand cmd("DEL");
+Response
+Client::del(Buffer key) {
+	Command cmd("DEL");
 	cmd << key;
-	return run(cmd, &Redis::read_integer);
+	return run(cmd, &Client::read_integer);
 }
-RedisResponse
-Redis::del(RedisList keys) {
-	return generic_multi_parameter("DEL", keys, &Redis::read_integer);
-}
-
-RedisResponse
-Redis::mget(RedisList keys) {
-	return generic_multi_parameter("MGET", keys, &Redis::read_multi_bulk);
+Response
+Client::del(RedisList keys) {
+	return generic_multi_parameter("DEL", keys, &Client::read_integer);
 }
 
-RedisResponse
-Redis::expire(RedisString key, long ttl) {
+Response
+Client::mget(RedisList keys) {
+	return generic_multi_parameter("MGET", keys, &Client::read_multi_bulk);
+}
+
+Response
+Client::expire(Buffer key, long ttl) {
 	return generic_key_int_return_int("EXPIRE", key, ttl);
 }
-RedisResponse
-Redis::expireAt(RedisString key, long timestamp) {
+Response
+Client::expireAt(Buffer key, long timestamp) {
 	return generic_key_int_return_int("EXPIREAT", key, timestamp);
 }
 
-RedisResponse
-Redis::mset(RedisList keys, RedisList vals) {
+Response
+Client::mset(RedisList keys, RedisList vals) {
 
-	return generic_mset("MSET", keys, vals, &Redis::read_status_code);
+	return generic_mset("MSET", keys, vals, &Client::read_status_code);
 }
 
-RedisResponse
-Redis::msetnx(RedisList keys, RedisList vals) {
+Response
+Client::msetnx(RedisList keys, RedisList vals) {
 
-	return generic_mset("MSETNX", keys, vals, &Redis::read_integer_as_bool);
+	return generic_mset("MSETNX", keys, vals, &Client::read_integer_as_bool);
 }
 
-RedisResponse
-Redis::info() {
-	RedisCommand cmd("INFO");
-	return run(cmd, &Redis::read_info_reply);
+Response
+Client::info() {
+	Command cmd("INFO");
+	return run(cmd, &Client::read_info_reply);
 }
 
-RedisResponse
-Redis::read_info_reply() {
+Response
+Client::read_info_reply() {
 
-	RedisResponse ret = read_string();
+	Response ret = read_string();
 
 	if(ret.type() != REDIS_STRING) {
 		cout << "FAIL" << endl;
-		return RedisResponse(REDIS_ERR);
+		return Response(REDIS_ERR);
 	}
 
 	string s = ret.str();
@@ -535,335 +536,335 @@ Redis::read_info_reply() {
 	return ret;
 }
 
-RedisResponse 
-Redis::incr(RedisString key, int val) {
+Response
+Client::incr(Buffer key, int val) {
 
 	return generic_key_int_return_int("INCR", key, val, true);
 }
-RedisResponse 
-Redis::decr(RedisString key, int val) {
+Response
+Client::decr(Buffer key, int val) {
 
 	return generic_key_int_return_int("DECR", key, val, true);
 }
-RedisResponse
-Redis::rename(RedisString src, RedisString dst) {
+Response
+Client::rename(Buffer src, Buffer dst) {
 
-	RedisCommand cmd("RENAME");
+	Command cmd("RENAME");
 	cmd << src << dst;
-	return run(cmd, &Redis::read_status_code);
+	return run(cmd, &Client::read_status_code);
 }
 
-RedisResponse
-Redis::renameNx(RedisString src, RedisString dst) {
+Response
+Client::renameNx(Buffer src, Buffer dst) {
 
-	RedisCommand cmd("RENAMENX");
+	Command cmd("RENAMENX");
 	cmd << src << dst;
-	return run(cmd, &Redis::read_integer);
+	return run(cmd, &Client::read_integer);
 }
 
-RedisResponse
-Redis::randomKey() {
-	RedisCommand cmd("RANDOMKEY");
-	return run(cmd, &Redis::read_single_line);
+Response
+Client::randomKey() {
+	Command cmd("RANDOMKEY");
+	return run(cmd, &Client::read_single_line);
 }
 
-RedisResponse
-Redis::ttl(RedisString key) {
-	RedisCommand cmd("TTL");
+Response
+Client::ttl(Buffer key) {
+	Command cmd("TTL");
 	cmd << key;
-	return run(cmd, &Redis::read_integer);
+	return run(cmd, &Client::read_integer);
 }
 
 
-RedisResponse
-Redis::ping() {
-	RedisCommand cmd("PING");
-	return run(cmd, &Redis::read_status_code);
+Response
+Client::ping() {
+	Command cmd("PING");
+	return run(cmd, &Client::read_status_code);
 }
 
 /* List commands */
 
-RedisResponse
-Redis::lpush(RedisString key, RedisString val) {
+Response
+Client::lpush(Buffer key, Buffer val) {
 	return generic_push("LPUSH", key, val);
 }
-RedisResponse
-Redis::rpush(RedisString key, RedisString val) {
+Response
+Client::rpush(Buffer key, Buffer val) {
 	return generic_push("RPUSH", key, val);
 }
 
-RedisResponse
-Redis::rpoplpush(RedisString src, RedisString dst) {
+Response
+Client::rpoplpush(Buffer src, Buffer dst) {
 
-	RedisCommand cmd("RPOPLPUSH");
+	Command cmd("RPOPLPUSH");
 	cmd << src << dst;
-	return run(cmd, &Redis::read_string);
+	return run(cmd, &Client::read_string);
 }
 
-RedisResponse
-Redis::llen(RedisString key) {
-	RedisCommand cmd("LLEN");
+Response
+Client::llen(Buffer key) {
+	Command cmd("LLEN");
 	cmd << key;
-	return run(cmd, &Redis::read_integer);
+	return run(cmd, &Client::read_integer);
 }
 
-RedisResponse
-Redis::lpop(RedisString key) {
+Response
+Client::lpop(Buffer key) {
 	return generic_pop("LPOP", key);
 }
-RedisResponse
-Redis::rpop(RedisString key) {
+Response
+Client::rpop(Buffer key) {
 	return generic_pop("RPOP", key);
 }
 
-RedisResponse
-Redis::blpop(RedisList keys, int timeout) {
+Response
+Client::blpop(RedisList keys, int timeout) {
 	return generic_blocking_pop("BLPOP", keys, timeout);
 }
 
-RedisResponse
-Redis::brpop(RedisList keys, int timeout) {
+Response
+Client::brpop(RedisList keys, int timeout) {
 	return generic_blocking_pop("BRPOP", keys, timeout);
 }
 
 
-RedisResponse
-Redis::ltrim(RedisString key, int start, int end) {
+Response
+Client::ltrim(Buffer key, int start, int end) {
 
-	RedisCommand cmd("LTRIM");
+	Command cmd("LTRIM");
 	cmd << key << (long)start << (long)end;
-	return run(cmd, &Redis::read_status_code);
+	return run(cmd, &Client::read_status_code);
 }
 
-RedisResponse
-Redis::lindex(RedisString key, int pos) {
+Response
+Client::lindex(Buffer key, int pos) {
 
-	RedisCommand cmd("LINDEX");
+	Command cmd("LINDEX");
 	cmd << key << (long)pos;
-	return run(cmd, &Redis::read_string);
+	return run(cmd, &Client::read_string);
 }
 
-RedisResponse
-Redis::lrem(RedisString key, int count, RedisString val) {
+Response
+Client::lrem(Buffer key, int count, Buffer val) {
 
-	return generic_list_item_action("LREM", key, count, val, &Redis::read_integer);
+	return generic_list_item_action("LREM", key, count, val, &Client::read_integer);
 }
 
-RedisResponse
-Redis::lset(RedisString key, int pos, RedisString val) {
+Response
+Client::lset(Buffer key, int pos, Buffer val) {
 
-	return generic_list_item_action("LSET", key, pos, val, &Redis::read_status_code);
+	return generic_list_item_action("LSET", key, pos, val, &Client::read_status_code);
 }
 
-RedisResponse
-Redis::lrange(RedisString key, int start, int end) {
+Response
+Client::lrange(Buffer key, int start, int end) {
 
-	RedisCommand cmd("LRANGE");
+	Command cmd("LRANGE");
 	cmd << key << (long)start << (long)end;
-	return run(cmd, &Redis::read_multi_bulk);
+	return run(cmd, &Client::read_multi_bulk);
 }
 
 /* Set commands */
 
-RedisResponse
-Redis::sadd(RedisString key, RedisString val) {
+Response
+Client::sadd(Buffer key, Buffer val) {
 	return generic_set_key_value("SADD", key, val);
 }
 
-RedisResponse
-Redis::srem(RedisString key, RedisString val) {
+Response
+Client::srem(Buffer key, Buffer val) {
 	return generic_set_key_value("SREM", key, val);
 }
 
-RedisResponse
-Redis::spop(RedisString key) {
+Response
+Client::spop(Buffer key) {
 	return generic_pop("SPOP", key);
 }
 
-RedisResponse
-Redis::scard(RedisString key) {
+Response
+Client::scard(Buffer key) {
 	return generic_card("SCARD", key);
 }
-RedisResponse
-Redis::sismember(RedisString key, RedisString val) {
+Response
+Client::sismember(Buffer key, Buffer val) {
 	return generic_set_key_value("SISMEMBER", key, val);
 }
 
-RedisResponse
-Redis::srandmember(RedisString key) {
+Response
+Client::srandmember(Buffer key) {
 	return generic_pop("SRANDMEMBER", key);
 }
 
-RedisResponse
-Redis::smove(RedisString src, RedisString dst, RedisString member) {
+Response
+Client::smove(Buffer src, Buffer dst, Buffer member) {
 
-	RedisCommand cmd("SMOVE");
+	Command cmd("SMOVE");
 	cmd << src << dst << member;
-	return run(cmd, &Redis::read_integer_as_bool);
+	return run(cmd, &Client::read_integer_as_bool);
 }
 
-RedisResponse
-Redis::sinter(RedisList keys) {
-	return generic_multi_parameter("SINTER", keys, &Redis::read_multi_bulk);
+Response
+Client::sinter(RedisList keys) {
+	return generic_multi_parameter("SINTER", keys, &Client::read_multi_bulk);
 }
-RedisResponse
-Redis::sunion(RedisList keys) {
-	return generic_multi_parameter("SUNION", keys, &Redis::read_multi_bulk);
+Response
+Client::sunion(RedisList keys) {
+	return generic_multi_parameter("SUNION", keys, &Client::read_multi_bulk);
 }
-RedisResponse
-Redis::sdiff(RedisList keys) {
-	return generic_multi_parameter("SDIFF", keys, &Redis::read_multi_bulk);
+Response
+Client::sdiff(RedisList keys) {
+	return generic_multi_parameter("SDIFF", keys, &Client::read_multi_bulk);
 }
-RedisResponse
-Redis::sinterstore(RedisList keys) {
-	return generic_multi_parameter("SINTERSTORE", keys, &Redis::read_integer);
+Response
+Client::sinterstore(RedisList keys) {
+	return generic_multi_parameter("SINTERSTORE", keys, &Client::read_integer);
 }
-RedisResponse
-Redis::sunionstore(RedisList keys) {
-	return generic_multi_parameter("SUNIONSTORE", keys, &Redis::read_integer);
+Response
+Client::sunionstore(RedisList keys) {
+	return generic_multi_parameter("SUNIONSTORE", keys, &Client::read_integer);
 }
-RedisResponse
-Redis::sdiffstore(RedisList keys) {
-	return generic_multi_parameter("SDIFFSTORE", keys, &Redis::read_integer);
+Response
+Client::sdiffstore(RedisList keys) {
+	return generic_multi_parameter("SDIFFSTORE", keys, &Client::read_integer);
 }
 
 /* zset commands */
 
-RedisResponse
-Redis::zadd(RedisString key, double score, RedisString member) {
-	RedisCommand cmd("ZADD");
+Response
+Client::zadd(Buffer key, double score, Buffer member) {
+	Command cmd("ZADD");
 
 	cmd << key << score << member;
-	return run(cmd, &Redis::read_integer_as_bool);
+	return run(cmd, &Client::read_integer_as_bool);
 }
-RedisResponse
-Redis::zrem(RedisString key, RedisString member) {
-	RedisCommand cmd("ZREM");
+Response
+Client::zrem(Buffer key, Buffer member) {
+	Command cmd("ZREM");
 
 	cmd << key << member;
-	return run(cmd, &Redis::read_integer_as_bool);
+	return run(cmd, &Client::read_integer_as_bool);
 }
 
-RedisResponse
-Redis::zincrby(RedisString key, double score, RedisString member) {
-	RedisCommand cmd("ZINCRBY");
+Response
+Client::zincrby(Buffer key, double score, Buffer member) {
+	Command cmd("ZINCRBY");
 
 	cmd << key << score << member;
-	return run(cmd, &Redis::read_double);
+	return run(cmd, &Client::read_double);
 }
 
-RedisResponse
-Redis::zscore(RedisString key, RedisString member) {
-	RedisCommand cmd("ZSCORE");
+Response
+Client::zscore(Buffer key, Buffer member) {
+	Command cmd("ZSCORE");
 
 	cmd << key << member;
-	return run(cmd, &Redis::read_double);
+	return run(cmd, &Client::read_double);
 }
-RedisResponse
-Redis::zrank(RedisString key, RedisString member) {
+Response
+Client::zrank(Buffer key, Buffer member) {
 	return generic_zrank("ZRANK", key, member);
 }
-RedisResponse
-Redis::zrevrank(RedisString key, RedisString member) {
+Response
+Client::zrevrank(Buffer key, Buffer member) {
 	return generic_zrank("ZREVRANK", key, member);
 }
-RedisResponse
-Redis::zrange(RedisString key, long start, long end, bool withscores) {
+Response
+Client::zrange(Buffer key, long start, long end, bool withscores) {
 	return generic_zrange("ZRANGE", key, start, end, withscores);
 }
-RedisResponse
-Redis::zrevrange(RedisString key, long start, long end, bool withscores) {
+Response
+Client::zrevrange(Buffer key, long start, long end, bool withscores) {
 	return generic_zrange("ZREVRANGE", key, start, end, withscores);
 }
 
-RedisResponse
-Redis::zcard(RedisString key) {
+Response
+Client::zcard(Buffer key) {
 	return generic_card("ZCARD", key);
 }
 
-RedisResponse
-Redis::zcount(RedisString key, long start, long end) {
+Response
+Client::zcount(Buffer key, long start, long end) {
 	return generic_z_start_end_int("ZCOUNT", key, start, end);
 }
-RedisResponse
-Redis::zremrangebyrank(RedisString key, long min, long max) {
+Response
+Client::zremrangebyrank(Buffer key, long min, long max) {
 	return generic_z_start_end_int("ZREMRANGEBYRANK", key, min, max);
 }
-RedisResponse
-Redis::zremrangebyscore(RedisString key, long min, long max) {
+Response
+Client::zremrangebyscore(Buffer key, long min, long max) {
 	return generic_z_start_end_int("ZREMRANGEBYSCORE", key, min, max);
 }
 
-RedisResponse
-Redis::zrangebyscore(RedisString key, long min, long max, bool withscores) {
+Response
+Client::zrangebyscore(Buffer key, long min, long max, bool withscores) {
 
-	RedisCommand cmd("ZRANGEBYSCORE");
+	Command cmd("ZRANGEBYSCORE");
 	cmd << key << min << max;
 	if(withscores) {
-		cmd << RedisString("WITHSCORES");
+		cmd << Buffer("WITHSCORES");
 	}
 
-	return run(cmd, &Redis::read_multi_bulk);
+	return run(cmd, &Client::read_multi_bulk);
 }
 
-RedisResponse
-Redis::zrangebyscore(RedisString key, long min, long max, long start, long end, bool withscores) {
+Response
+Client::zrangebyscore(Buffer key, long min, long max, long start, long end, bool withscores) {
 
-	RedisCommand cmd("ZRANGEBYSCORE");
-	cmd << key << min << max << RedisString("LIMIT") << start << end;
+	Command cmd("ZRANGEBYSCORE");
+	cmd << key << min << max << Buffer("LIMIT") << start << end;
 	if(withscores) {
-		cmd << RedisString("WITHSCORES");
+		cmd << Buffer("WITHSCORES");
 	}
 
-	return run(cmd, &Redis::read_multi_bulk);
+	return run(cmd, &Client::read_multi_bulk);
 }
 
-RedisResponse
-Redis::zunion(RedisString key, RedisList keys) {
+Response
+Client::zunion(Buffer key, RedisList keys) {
 	vector<double> v;
 	return zunion(key, keys, v, "");
 }
-RedisResponse
-Redis::zunion(RedisString key, RedisList keys, string aggregate) {
+Response
+Client::zunion(Buffer key, RedisList keys, string aggregate) {
 	vector<double> v;
 	return zunion(key, keys, v, aggregate);
 }
-RedisResponse
-Redis::zunion(RedisString key, RedisList keys, vector<double> weights) {
+Response
+Client::zunion(Buffer key, RedisList keys, vector<double> weights) {
 	return zunion(key, keys, weights, "");
 }
-RedisResponse
-Redis::zunion(RedisString key, RedisList keys, vector<double> weights, string aggregate) {
+Response
+Client::zunion(Buffer key, RedisList keys, vector<double> weights, string aggregate) {
 	return generic_z_set_operation("ZUNION", key, keys, weights, aggregate);
 }
 
-RedisResponse
-Redis::zinter(RedisString key, RedisList keys) {
+Response
+Client::zinter(Buffer key, RedisList keys) {
 	vector<double> v;
 	return zunion(key, keys, v, "");
 }
-RedisResponse
-Redis::zinter(RedisString key, RedisList keys, string aggregate) {
+Response
+Client::zinter(Buffer key, RedisList keys, string aggregate) {
 	vector<double> v;
 	return zunion(key, keys, v, aggregate);
 }
-RedisResponse
-Redis::zinter(RedisString key, RedisList keys, vector<double> weights) {
+Response
+Client::zinter(Buffer key, RedisList keys, vector<double> weights) {
 	return zunion(key, keys, weights, "");
 }
-RedisResponse
-Redis::zinter(RedisString key, RedisList keys, vector<double> weights, string aggregate) {
+Response
+Client::zinter(Buffer key, RedisList keys, vector<double> weights, string aggregate) {
 	return generic_z_set_operation("ZINTER", key, keys, weights, aggregate);
 }
 
-RedisResponse
-Redis::generic_z_set_operation(string keyword, RedisString key, RedisList keys,
+Response
+Client::generic_z_set_operation(string keyword, Buffer key, RedisList keys,
 		vector<double> weights, string aggregate) {
 
 	if(weights.size() != 0 && keys.size() != weights.size()) {
-		return RedisResponse(REDIS_ERR);
+		return Response(REDIS_ERR);
 	}
-	RedisCommand cmd(keyword);
+	Command cmd(keyword);
 	cmd << key << (long)keys.size();
 
 	RedisList::const_iterator i_key;
@@ -872,7 +873,7 @@ Redis::generic_z_set_operation(string keyword, RedisString key, RedisList keys,
 	}
 	if(weights.size()) {
 
-		cmd << RedisString("WEIGHTS");
+		cmd << Buffer("WEIGHTS");
 
 		vector<double>::const_iterator w_key;
 		for(w_key = weights.begin(); w_key != weights.end(); w_key++) {
@@ -882,101 +883,101 @@ Redis::generic_z_set_operation(string keyword, RedisString key, RedisList keys,
 
 	if(aggregate.size()) {
 		string s = "AGGREGATE " + aggregate;
-		cmd << RedisString(s.c_str());
+		cmd << Buffer(s.c_str());
 	}
 
-	return run(cmd, &Redis::read_integer);
+	return run(cmd, &Client::read_integer);
 }
 
 /* hash commands */
 
-RedisResponse
-Redis::hset(RedisString key, RedisString field, RedisString val) {
-	RedisCommand cmd("HSET");
+Response
+Client::hset(Buffer key, Buffer field, Buffer val) {
+	Command cmd("HSET");
 	cmd << key << field << val;
-	return run(cmd, &Redis::read_integer_as_bool);
+	return run(cmd, &Client::read_integer_as_bool);
 }
-RedisResponse
-Redis::hget(RedisString key, RedisString field) {
-	RedisCommand cmd("HSET");
+Response
+Client::hget(Buffer key, Buffer field) {
+	Command cmd("HSET");
 	cmd << key << field;
-	return run(cmd, &Redis::read_string);
+	return run(cmd, &Client::read_string);
 }
 
-RedisResponse
-Redis::hdel(RedisString key, RedisString field) {
-	RedisCommand cmd("HDEL");
+Response
+Client::hdel(Buffer key, Buffer field) {
+	Command cmd("HDEL");
 	cmd << key << field;
-	return run(cmd, &Redis::read_integer_as_bool);
+	return run(cmd, &Client::read_integer_as_bool);
 }
-RedisResponse
-Redis::hexists(RedisString key, RedisString field) {
-	RedisCommand cmd("HEXISTS");
+Response
+Client::hexists(Buffer key, Buffer field) {
+	Command cmd("HEXISTS");
 	cmd << key << field;
-	return run(cmd, &Redis::read_integer_as_bool);
+	return run(cmd, &Client::read_integer_as_bool);
 }
 
-RedisResponse
-Redis::hlen(RedisString key) {
-	RedisCommand cmd("HLEN");
+Response
+Client::hlen(Buffer key) {
+	Command cmd("HLEN");
 	cmd << key;
-	return run(cmd, &Redis::read_integer);
+	return run(cmd, &Client::read_integer);
 }
-RedisResponse
-Redis::hkeys(RedisString key) {
+Response
+Client::hkeys(Buffer key) {
 	return generic_h_simple_list("HKEYS", key);
 }
 
-RedisResponse
-Redis::hvals(RedisString key) {
+Response
+Client::hvals(Buffer key) {
 	return generic_h_simple_list("HVALS", key);
 }
 
-RedisResponse
-Redis::hgetall(RedisString key) {
+Response
+Client::hgetall(Buffer key) {
 	return generic_h_simple_list("HGETALL", key);
 }
 
-RedisResponse
-Redis::hincrby(RedisString key, RedisString field, double d) {
-	RedisCommand cmd("HINCRBY");
+Response
+Client::hincrby(Buffer key, Buffer field, double d) {
+	Command cmd("HINCRBY");
 	cmd << key << field << d;
-	return run(cmd, &Redis::read_double);
+	return run(cmd, &Client::read_double);
 }
 
 /* generic commands below */
 
-RedisResponse
-Redis::generic_z_start_end_int(string keyword, RedisString key, long start, long end) {
+Response
+Client::generic_z_start_end_int(string keyword, Buffer key, long start, long end) {
 
-	RedisCommand cmd(keyword);
+	Command cmd(keyword);
 	cmd << key << start << end;
-	return run(cmd, &Redis::read_integer);
+	return run(cmd, &Client::read_integer);
 }
 
 
-RedisResponse
-Redis::generic_zrange(string keyword, RedisString key, long start, long end, bool withscores) {
+Response
+Client::generic_zrange(string keyword, Buffer key, long start, long end, bool withscores) {
 
-	RedisCommand cmd(keyword);
+	Command cmd(keyword);
 
 	cmd << key << start << end;
 	if(withscores) {
-		cmd << RedisString("WITHSCORES");
+		cmd << Buffer("WITHSCORES");
 	}
-	return run(cmd, &Redis::read_multi_bulk);
+	return run(cmd, &Client::read_multi_bulk);
 }
 
-RedisResponse
-Redis::generic_zrank(string keyword, RedisString key, RedisString member) {
-	RedisCommand cmd(keyword);
+Response
+Client::generic_zrank(string keyword, Buffer key, Buffer member) {
+	Command cmd(keyword);
 	cmd << key << member;
-	return run(cmd, &Redis::read_integer);
+	return run(cmd, &Client::read_integer);
 }
 
-RedisResponse
-Redis::generic_multi_parameter(string keyword, RedisList &keys, ResponseReader fun) {
-	RedisCommand cmd(keyword);
+Response
+Client::generic_multi_parameter(string keyword, RedisList &keys, ResponseReader fun) {
+	Command cmd(keyword);
 	RedisList::const_iterator key;
 	for(key = keys.begin(); key != keys.end(); key++) {
 		cmd << *key;
@@ -984,69 +985,69 @@ Redis::generic_multi_parameter(string keyword, RedisList &keys, ResponseReader f
 	return run(cmd, fun);
 }
 
-RedisResponse
-Redis::generic_pop(string keyword, RedisString key){
-	RedisCommand cmd(keyword);
+Response
+Client::generic_pop(string keyword, Buffer key){
+	Command cmd(keyword);
 
 	cmd << key;
-	return run(cmd, &Redis::read_string);
+	return run(cmd, &Client::read_string);
 }
 
-RedisResponse
-Redis::generic_push(string keyword, RedisString key, RedisString val) {
+Response
+Client::generic_push(string keyword, Buffer key, Buffer val) {
 
-	RedisCommand cmd(keyword);
+	Command cmd(keyword);
 	cmd << key << val;
-	return run(cmd, &Redis::read_integer);
+	return run(cmd, &Client::read_integer);
 }
 
-RedisResponse
-Redis::generic_key_int_return_int(std::string keyword, RedisString key, int val, bool addBy) {
+Response
+Client::generic_key_int_return_int(std::string keyword, Buffer key, int val, bool addBy) {
 
 	if(val > 1 && addBy) {
 		keyword = keyword + "BY";
 	}
-	RedisCommand cmd(keyword);
+	Command cmd(keyword);
 	cmd << key;
 	if(!addBy || (val > 1 && addBy)) {
 		cmd << (long)val;
 	}
-	return run(cmd, &Redis::read_integer);
+	return run(cmd, &Client::read_integer);
 }
 
-RedisResponse
-Redis::generic_list_item_action(string keyword, RedisString key, int n,
-		RedisString val, ResponseReader fun) {
-	RedisCommand cmd(keyword);
+Response
+Client::generic_list_item_action(string keyword, Buffer key, int n,
+		Buffer val, ResponseReader fun) {
+	Command cmd(keyword);
 	cmd << key << (long)n << val;
 
 	return run(cmd, fun);
 }
 
-RedisResponse
-Redis::generic_set_key_value(string keyword, RedisString key, RedisString val) {
+Response
+Client::generic_set_key_value(string keyword, Buffer key, Buffer val) {
 
-	RedisCommand cmd(keyword);
+	Command cmd(keyword);
 	cmd << key << val;
-	return run(cmd, &Redis::read_integer_as_bool);
+	return run(cmd, &Client::read_integer_as_bool);
 }
 
-RedisResponse
-Redis::generic_card(string keyword, RedisString key) {
+Response
+Client::generic_card(string keyword, Buffer key) {
 
-	RedisCommand cmd(keyword);
+	Command cmd(keyword);
 	cmd << key;
-	return run(cmd, &Redis::read_integer);
+	return run(cmd, &Client::read_integer);
 }
 
-RedisResponse
-Redis::generic_mset(string keyword, RedisList keys, RedisList vals, ResponseReader fun) {
+Response
+Client::generic_mset(string keyword, RedisList keys, RedisList vals, ResponseReader fun) {
 
 	if(keys.size() != vals.size() || keys.size() == 0) {
-		return RedisResponse(REDIS_ERR);
+		return Response(REDIS_ERR);
 	}
 
-	RedisCommand cmd(keyword);
+	Command cmd(keyword);
 	RedisList::const_iterator key;
 	RedisList::const_iterator val;
 	for(key = keys.begin(), val = vals.begin(); key != keys.end(); key++, val++) {
@@ -1056,18 +1057,18 @@ Redis::generic_mset(string keyword, RedisList keys, RedisList vals, ResponseRead
 	return run(cmd, fun);
 }
 
-RedisResponse
-Redis::generic_h_simple_list(string keyword, RedisString key) {
-	RedisCommand cmd(keyword);
+Response
+Client::generic_h_simple_list(string keyword, Buffer key) {
+	Command cmd(keyword);
 	cmd << key;
 
-	return run(cmd, &Redis::read_multi_bulk);
+	return run(cmd, &Client::read_multi_bulk);
 }
 
-RedisResponse
-Redis::generic_blocking_pop(string keyword, RedisList keys, int timeout) {
+Response
+Client::generic_blocking_pop(string keyword, RedisList keys, int timeout) {
 
-	RedisCommand cmd(keyword);
+	Command cmd(keyword);
 	
 	RedisList::const_iterator key;
 	for(key = keys.begin(); key != keys.end(); key++) {
@@ -1075,6 +1076,7 @@ Redis::generic_blocking_pop(string keyword, RedisList keys, int timeout) {
 	}
 	cmd << (long)timeout;
 
-	return run(cmd, &Redis::read_multi_bulk);
+	return run(cmd, &Client::read_multi_bulk);
+}
 }
 

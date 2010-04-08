@@ -2,8 +2,9 @@
 #include <string>
 
 using namespace std;
+namespace redis {
 
-RedisResponse::RedisResponse(RedisResponseType t) :
+Response::Response(RedisResponseType t) :
 	m_type(t),
 	m_long(0),
 	m_bool(false)
@@ -12,7 +13,7 @@ RedisResponse::RedisResponse(RedisResponseType t) :
 }
 
 bool
-RedisResponse::setString(RedisString s) {
+Response::setString(Buffer s) {
 	if(m_type != REDIS_STRING) {
 		return false;
 	}
@@ -21,7 +22,7 @@ RedisResponse::setString(RedisString s) {
 	return true;
 }
 bool
-RedisResponse::setLong(long l) {
+Response::setLong(long l) {
 	if(m_type != REDIS_LONG) {
 		return false;
 	}
@@ -30,7 +31,7 @@ RedisResponse::setLong(long l) {
 	return true;
 }
 bool
-RedisResponse::addString(RedisString s) {
+Response::addString(Buffer s) {
 	if(m_type != REDIS_LIST) {
 		return false;
 	}
@@ -40,7 +41,7 @@ RedisResponse::addString(RedisString s) {
 }
 
 bool
-RedisResponse::addString(std::string key, std::string val) {
+Response::addString(std::string key, std::string val) {
 	if(m_type != REDIS_INFO_MAP) {
 		return false;
 	}
@@ -49,7 +50,7 @@ RedisResponse::addString(std::string key, std::string val) {
 	return true;
 }
 bool
-RedisResponse::addZString(RedisString s, double score) {
+Response::addZString(Buffer s, double score) {
 	if(m_type != REDIS_ZSET) {
 		return false;
 	}
@@ -59,7 +60,7 @@ RedisResponse::addZString(RedisString s, double score) {
 }
 
 bool
-RedisResponse::setBool(bool b) {
+Response::setBool(bool b) {
 	if(m_type != REDIS_BOOL) {
 		return false;
 	}
@@ -68,7 +69,7 @@ RedisResponse::setBool(bool b) {
 }
 
 bool
-RedisResponse::setDouble(double d) {
+Response::setDouble(double d) {
 	if(m_type != REDIS_DOUBLE) {
 		return false;
 	}
@@ -77,21 +78,21 @@ RedisResponse::setDouble(double d) {
 }
 
 void 
-RedisResponse::type(RedisResponseType t) {
+Response::type(RedisResponseType t) {
 	m_type = t;
 }
 RedisResponseType 
-RedisResponse::type() const {
+Response::type() const {
 	return m_type;
 }
 
-RedisString
-RedisResponse::string() const {
+Buffer
+Response::string() const {
 	return m_str;
 }
 
 string 
-RedisResponse::str() const {
+Response::str() const {
 
 	std::string ret;
 	ret.insert(ret.end(), m_str.begin(), m_str.end());
@@ -99,23 +100,23 @@ RedisResponse::str() const {
 }
 
 long 
-RedisResponse::value() const {
+Response::value() const {
 
 	return m_long;
 }
 
 bool
-RedisResponse::boolVal() const {
+Response::boolVal() const {
 	return m_bool;
 }
 
 double
-RedisResponse::doubleVal() const {
+Response::doubleVal() const {
 	return m_double;
 }
 
 int
-RedisResponse::size() const {
+Response::size() const {
 	if(m_type == REDIS_LIST) {
 		return m_array.size();
 	} else if(m_type == REDIS_ZSET) {
@@ -123,3 +124,5 @@ RedisResponse::size() const {
 	}
 	return -1;
 }
+}
+

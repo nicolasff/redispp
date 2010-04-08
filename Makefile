@@ -1,5 +1,5 @@
 OUT=test
-OBJS=test.o redis.o redisCommand.o redisResponse.o redisSortParams.o
+OBJS=test.o redis.o redisCommand.o redisResponse.o redisSortParams.o redisBuffer.o
 CPPFLAGS=-ggdb -Wall -Wextra
 
 all: $(OUT)

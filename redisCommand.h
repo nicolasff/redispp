@@ -1,6 +1,7 @@
 #ifndef REDIS_COMMAND_H
 #define REDIS_COMMAND_H
 
+#include "redisBuffer.h"
 #include <list>
 #include <map>
 #include <string>
@@ -8,33 +9,23 @@
 
 typedef std::map<std::string, std::string> RedisInfoMap;
 
-class RedisString : public std::vector<char> {
-
-	public:
-		RedisString();
-		RedisString(std::string &s);
-		RedisString(const char *s);
-		RedisString(const char *s, size_t sz);
-
-};
-
-typedef std::vector<RedisString> RedisList;
-
-class RedisCommand {
+namespace redis {
+class Command {
 
 public:
-	RedisCommand(std::string keyword);
+	Command(std::string keyword);
 
-	RedisCommand &operator<<(const char *s);
-	RedisCommand &operator<<(long l);
-	RedisCommand &operator<<(double d);
-	RedisCommand &operator<<(const RedisString s);
+	Command &operator<<(const char *s);
+	Command &operator<<(long l);
+	Command &operator<<(double d);
+	Command &operator<<(const Buffer s);
 
-	RedisString get();
+	Buffer get();
 
 private:
-	std::list<RedisString> m_elements;
+	std::list<Buffer> m_elements;
 };
+}
 
 
 #endif /* REDIS_COMMAND_H */
