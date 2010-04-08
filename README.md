@@ -4,6 +4,7 @@ This project aims to provide a stable a feature-complete C++ library for Redis.
 
 * get
 * set
+* getset
 * incr
 * incrby
 * decr
@@ -27,6 +28,8 @@ This project aims to provide a stable a feature-complete C++ library for Redis.
 * auth
 * select
 * keys
+* dbsize
+* lastsave
 
 --------------------
 
@@ -90,8 +93,6 @@ This project aims to provide a stable a feature-complete C++ library for Redis.
 
 #### Functions not implemented
 
-* dbsize
-* lastsave
 * save
 * bgsave
 * bgrewriteaof
@@ -105,8 +106,6 @@ This project aims to provide a stable a feature-complete C++ library for Redis.
 * flushdb
 * flushall
 * sort
-* monitor
-* getset
 * slaveof
 
 --------------------

@@ -293,6 +293,19 @@ Redis::keys(RedisString pattern) {
 	cmd << pattern;
 	return run(cmd, &Redis::read_multi_bulk);
 }
+RedisResponse
+Redis::dbsize(int index) {
+	RedisCommand cmd("DBSIZE");
+
+	cmd << (long)index;
+	return run(cmd, &Redis::read_integer);
+}
+
+RedisResponse
+Redis::lastsave() {
+	RedisCommand cmd("LASTSAVE");
+	return run(cmd, &Redis::read_integer);
+}
 
 RedisResponse
 Redis::get(RedisString key){
@@ -308,6 +321,14 @@ Redis::set(RedisString key, RedisString val) {
 
 	cmd << key << val;
 	return run(cmd, &Redis::read_status_code);
+}
+
+RedisResponse
+Redis::getset(RedisString key, RedisString val) {
+	RedisCommand cmd("GETSET");
+
+	cmd << key << val;
+	return run(cmd, &Redis::read_string);
 }
 
 RedisResponse

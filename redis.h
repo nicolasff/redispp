@@ -20,9 +20,12 @@ public:
 	RedisResponse auth(RedisString key);
 	RedisResponse select(int index);
 	RedisResponse keys(RedisString pattern);
+	RedisResponse dbsize(int index);
+	RedisResponse lastsave();
 
 	RedisResponse get(RedisString key);
 	RedisResponse set(RedisString key, RedisString val);
+	RedisResponse getset(RedisString key, RedisString val);
 	RedisResponse incr(RedisString key, int val = 1);
 	RedisResponse decr(RedisString key, int val = 1);
 	RedisResponse rename(RedisString src, RedisString dst);
