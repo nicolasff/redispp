@@ -329,6 +329,19 @@ Redis::bgsave() {
 	return run(cmd, &Redis::read_status_code);
 }
 
+RedisResponse
+Redis::bgrewriteaof() {
+	RedisCommand cmd("BGREWRITEAOF");
+	return run(cmd, &Redis::read_status_code);
+}
+
+RedisResponse
+Redis::move(RedisString key, int index) {
+	RedisCommand cmd("MOVE");
+	cmd << key << (long)index;
+	return run(cmd, &Redis::read_integer_as_bool);
+}
+
 
 RedisResponse
 Redis::get(RedisString key){
@@ -528,6 +541,17 @@ RedisResponse
 Redis::rpop(RedisString key) {
 	return generic_pop("RPOP", key);
 }
+
+RedisResponse
+Redis::blpop(RedisList keys, int timeout) {
+	return generic_blocking_pop("BLPOP", keys, timeout);
+}
+
+RedisResponse
+Redis::brpop(RedisList keys, int timeout) {
+	return generic_blocking_pop("BRPOP", keys, timeout);
+}
+
 
 RedisResponse
 Redis::ltrim(RedisString key, int start, int end) {
@@ -962,6 +986,20 @@ RedisResponse
 Redis::generic_h_simple_list(string keyword, RedisString key) {
 	RedisCommand cmd(keyword);
 	cmd << key;
+
+	return run(cmd, &Redis::read_multi_bulk);
+}
+
+RedisResponse
+Redis::generic_blocking_pop(string keyword, RedisList keys, int timeout) {
+
+	RedisCommand cmd(keyword);
+	
+	RedisList::const_iterator key;
+	for(key = keys.begin(); key != keys.end(); key++) {
+		cmd << *key;
+	}
+	cmd << (long)timeout;
 
 	return run(cmd, &Redis::read_multi_bulk);
 }

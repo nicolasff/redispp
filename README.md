@@ -35,6 +35,8 @@ This project aims to provide a stable a feature-complete C++ library for Redis.
 * flushall
 * save
 * bgsave
+* bgrewriteaof
+* move
 
 --------------------
 
@@ -44,6 +46,8 @@ This project aims to provide a stable a feature-complete C++ library for Redis.
 * llen
 * lpop
 * rpop
+* blpop
+* brpop
 * ltrim
 * lindex
 * lrem
@@ -98,20 +102,14 @@ This project aims to provide a stable a feature-complete C++ library for Redis.
 
 #### Functions not implemented
 
-* bgrewriteaof
-* shutdown
-* move
 * type
 
 --------------------
 
-* sync
 * sort
 
 --------------------
 
-* blpop
-* brpop
 * append
 * substr
 

@@ -26,6 +26,8 @@ public:
 	RedisResponse flushall();
 	RedisResponse save();
 	RedisResponse bgsave();
+	RedisResponse bgrewriteaof();
+	RedisResponse move(RedisString key, int index);
 
 	RedisResponse get(RedisString key);
 	RedisResponse set(RedisString key, RedisString val);
@@ -54,6 +56,8 @@ public:
 	RedisResponse llen(RedisString key);
 	RedisResponse lpop(RedisString key);
 	RedisResponse rpop(RedisString key);
+	RedisResponse blpop(RedisList keys, int timeout);
+	RedisResponse brpop(RedisList keys, int timeout);
 	RedisResponse ltrim(RedisString key, int start, int end);
 	RedisResponse lindex(RedisString key, int pos);
 	RedisResponse lrem(RedisString key, int count, RedisString val);
@@ -132,6 +136,7 @@ private:
 		std::vector<double> weights, std::string aggregate);
 	RedisResponse generic_mset(std::string keyword, RedisList keys, RedisList vals, ResponseReader fun);
 	RedisResponse generic_h_simple_list(std::string keyword, RedisString key);
+	RedisResponse generic_blocking_pop(std::string keyword, RedisList keys, int timeout);
 
 	
 	RedisResponse read_string();
