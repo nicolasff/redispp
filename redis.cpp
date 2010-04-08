@@ -404,6 +404,18 @@ Redis::substr(RedisString key, int start, int end) {
 	cmd << key << (long)start << (long)end;
 	return run(cmd, &Redis::read_string);
 }
+RedisResponse
+Redis::config(RedisString key, RedisString field) {
+	RedisCommand cmd("CONFIG");
+	cmd << key << RedisString("GET") << field;
+	return run(cmd, &Redis::read_multi_bulk);
+}
+RedisResponse
+Redis::config(RedisString key, RedisString field, RedisString val) {
+	RedisCommand cmd("CONFIG");
+	cmd << key << RedisString("SET") << field << val;
+	return run(cmd, &Redis::read_string);
+}
 
 RedisResponse
 Redis::get(RedisString key){

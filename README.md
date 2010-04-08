@@ -41,6 +41,7 @@ This project aims to provide a stable and feature-complete C++ library for Redis
 * type
 * append
 * substr
+* config (`get` and `set`, not `resetstat`)
 
 --------------------
 
@@ -105,10 +106,6 @@ This project aims to provide a stable and feature-complete C++ library for Redis
 * hincrby
 
 #### Functions not implemented
-
-* config
-
---------------------
 
 * subscribe
 * unsubscribe
