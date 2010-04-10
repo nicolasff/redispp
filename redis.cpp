@@ -450,7 +450,7 @@ Client::getset(Buffer key, Buffer val) {
 }
 
 Response
-Client::setNx(Buffer key, Buffer val) {
+Client::setnx(Buffer key, Buffer val) {
 	Command cmd("SETNX");
 	cmd << key << val;
 	return run(cmd, &Client::read_integer_as_bool);
@@ -484,7 +484,7 @@ Client::expire(Buffer key, long ttl) {
 	return generic_key_int_return_int("EXPIRE", key, ttl);
 }
 Response
-Client::expireAt(Buffer key, long timestamp) {
+Client::expireat(Buffer key, long timestamp) {
 	return generic_key_int_return_int("EXPIREAT", key, timestamp);
 }
 
@@ -562,7 +562,7 @@ Client::rename(Buffer src, Buffer dst) {
 }
 
 Response
-Client::renameNx(Buffer src, Buffer dst) {
+Client::renamenx(Buffer src, Buffer dst) {
 
 	Command cmd("RENAMENX");
 	cmd << src << dst;
@@ -570,7 +570,7 @@ Client::renameNx(Buffer src, Buffer dst) {
 }
 
 Response
-Client::randomKey() {
+Client::randomkey() {
 	Command cmd("RANDOMKEY");
 	return run(cmd, &Client::read_single_line);
 }

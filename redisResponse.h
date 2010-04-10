@@ -30,6 +30,7 @@ public:
 	long value() const;
 	bool boolVal() const;
 	double doubleVal() const;
+	std::vector<Buffer> array() const;
 
 	int size() const;
 

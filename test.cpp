@@ -90,6 +90,13 @@ testSet(redis::Client &redis) {
 	ret = redis.set(k, val);
 	ret = redis.get(k);
 	assert(ret.type() == REDIS_STRING && ret.string() == val);
+
+	string keyRN = "abc\r\ndef";
+	string valRN = "val\r\nxyz";
+	ret = redis.set(keyRN, valRN);
+	assert(ret.type() == REDIS_BOOL && ret.boolVal());
+	ret = redis.get(keyRN);
+	assert(ret.type() == REDIS_STRING && ret.str() == valRN);
 }
 
 void
@@ -106,6 +113,49 @@ testGetSet(redis::Client &redis) {
 	assert(ret.type() == REDIS_STRING && ret.str() == "123");
 }
 
+void
+testRandomKey(redis::Client &redis) {
+
+	// FIXME: this test is disabled, waiting for antirez to close redis issue #88:
+	// http://code.google.com/p/redis/issues/detail?id=88#c6
+
+	return;
+
+	for(int i = 0; i < 1000; ++i) {
+		redis::Response ret = redis.randomkey();
+		cout << ret.str() << endl;
+		assert(ret.type() == REDIS_STRING);
+
+		ret = redis.exists(ret.string());
+		assert(ret.type() == REDIS_BOOL);
+		assert(ret.boolVal());
+	}
+}
+
+void
+testRename(redis::Client &redis) {
+
+	// strings
+	redis.del("key0");
+	redis.set("key0", "val0");
+	redis.rename("key0", "key1");
+	assert(redis.get("key0").type() == REDIS_ERR);
+	assert(redis.get("key1").str() == "val0");
+
+	// lists
+	redis.del("key0");
+	redis.lpush("key0", "val0");
+	redis.lpush("key0", "val1");
+	redis.rename("key0", "key1");
+	assert(redis.lrange("key0", 0, -1).size() == 0);
+
+	redis::Response ret = redis.lrange("key1", 0, -1);
+	assert(ret.type() == REDIS_LIST && ret.size() == 2);
+	assert(&ret.array()[0][0] == string("val1"));
+	assert(&ret.array()[1][0] == string("val0"));
+}
+
+
 int main() {
 
 	redis::Client r;
@@ -118,6 +168,8 @@ int main() {
 	testErr(r);
 	testSet(r);
 	testGetSet(r);
+	testRandomKey(r);
+	testRename(r);
 
 
 	cout << endl << tests_passed << " tests passed, " << tests_failed << " failed." << endl;

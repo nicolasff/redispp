@@ -124,5 +124,11 @@ Response::size() const {
 	}
 	return -1;
 }
+
+std::vector<Buffer>
+Response::array() const {
+	return m_array;
+}
+
 }
 
