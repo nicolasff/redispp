@@ -1,22 +1,23 @@
-This project aims to provide a stable and feature-complete C++ library for Redis.
+This project aims to provide a stable, tested, and feature-complete C++ library for Redis.
+It is released under the [New BSD License](http://www.opensource.org/licenses/bsd-license.php).
 
 #### Functions implemented
 
-* get
-* set
-* getset
+* get (**TESTED**)
+* set (**TESTED**)
+* getset (**TESTED**)
 * incr
 * incrby
 * decr
 * decrby
-* rename
-* renameNx
+* rename (**TESTED**)
+* renamenx
 * ttl
-* ping
+* ping (**TESTED**)
 * setnx
 * exists
 * randomkey
-* del
+* del (**TESTED**)
 * mget
 * mset
 * msetnx
