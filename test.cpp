@@ -1,5 +1,6 @@
 #include "redis.h"
 #include <iostream>
+#include <string>
 
 int tests_passed = 0;
 int tests_failed = 0;
@@ -26,15 +27,83 @@ testPing(redis::Client &redis) {
 	assert(r.boolVal() == true);
 }
 void
-test1000(redis::Client &redis) {
-	char buf[1000];
-	fill(buf, buf + sizeof(buf), 'A');
+test1000(redis::Client &redis, int count) {
+	char *buf = new char[count+1];
+	buf[count] = 0;
+	fill(buf, buf + count, 'A');
 
-	redis::Response rSet = redis.set("x", redis::Buffer(buf, sizeof(buf)));
+	redis::Response rSet = redis.set("x", redis::Buffer(buf, count));
 	assert(rSet.type() == REDIS_BOOL && rSet.boolVal() == true);
 
 	redis::Response rGet = redis.get("x");
-	assert(rGet.type() == REDIS_STRING && rGet.str() == string(buf, 1000));
+	assert(rGet.type() == REDIS_STRING && rGet.str() == string(buf, count));
+
+	delete[] buf;
+}
+
+void
+testErr(redis::Client &redis) {
+
+	redis.set("x", "-ERR");
+	redis::Response rGet = redis.get("x");
+	assert(rGet.type() == REDIS_STRING && rGet.str() == "-ERR");
+}
+
+void
+testSet(redis::Client &redis) {
+	redis::Response ret(REDIS_ERR);
+
+	// set value to "nil"
+	ret = redis.set("x", "nil");
+	assert(ret.type() == REDIS_BOOL && ret.boolVal());
+	ret = redis.get("x");
+	assert(ret.type() == REDIS_STRING && ret.str() == "nil");
+
+	// get twice
+	ret = redis.set("x", "val");
+	assert(ret.type() == REDIS_BOOL && ret.boolVal());
+	ret = redis.get("x");
+	assert(ret.type() == REDIS_STRING && ret.str() == "val");
+	ret = redis.get("x");
+	assert(ret.type() == REDIS_STRING && ret.str() == "val");
+
+	// set, delete, and get → not found.
+	ret = redis.set("x", "val");
+	assert(ret.type() == REDIS_BOOL && ret.boolVal());
+	redis.del("x");
+	ret = redis.get("x");
+	assert(ret.type() == REDIS_ERR);
+
+	// binary data
+	redis::Buffer val("v\0a\0l", 5);
+	ret = redis.set("x", val);
+	ret = redis.get("x");
+	assert(ret.type() == REDIS_STRING && ret.string() == val);
+	
+	// binary key
+	redis::Buffer k("v\0a\0l", 5);
+	ret = redis.set(k, "ok");
+	ret = redis.get(k);
+	assert(ret.type() == REDIS_STRING && ret.str() == "ok");
+	
+	// binary key and value
+	ret = redis.set(k, val);
+	ret = redis.get(k);
+	assert(ret.type() == REDIS_STRING && ret.string() == val);
+}
+
+void
+testGetSet(redis::Client &redis) {
+
+	redis.del("key");
+	redis::Response ret = redis.getset("key", "42");
+	assert(ret.type() == REDIS_ERR);
+
+	ret = redis.getset("key", "123");
+	assert(ret.type() == REDIS_STRING && ret.str() == "42");
+
+	ret = redis.getset("key", "123");
+	assert(ret.type() == REDIS_STRING && ret.str() == "123");
 }
 
 int main() {
@@ -44,7 +113,11 @@ int main() {
 	r.connect(); // default settings
 
 	testPing(r);
-	test1000(r);
+	test1000(r, 1000);
+	test1000(r, 1000000);
+	testErr(r);
+	testSet(r);
+	testGetSet(r);
 
 
 	cout << endl << tests_passed << " tests passed, " << tests_failed << " failed." << endl;

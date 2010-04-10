@@ -135,12 +135,19 @@ Client::read_string() {
 			return ret; // not found
 		}
 
-		// need to read last \r\n
-		char *buf = new char[sz + 2];
 		if(sz) {
-			read(m_fd, buf, sz + 2);
+			// need to read last \r\n
+			char *buf = new char[sz + 2];
+
+			int remain = sz + 2;
+			while(remain) {
+				int got = read(m_fd, buf + sz + 2 - remain, remain);
+				remain -= got;
+			}
+
 			Buffer s;
 			s.insert(s.end(), buf, buf+sz);
+			delete[] buf;
 			// set string.
 			ret.type(REDIS_STRING);
 			ret.setString(s);
