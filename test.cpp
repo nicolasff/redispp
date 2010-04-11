@@ -685,7 +685,6 @@ testLset(redis::Client &redis) {
 void
 testLrange(redis::Client &redis) {
 
-	redis::Buffer b;
 	redis::List l;
 
 	redis.del("list");
@@ -755,6 +754,46 @@ testLrange(redis::Client &redis) {
 	assert(l.size() == 0);
 }
 
+void
+testRpopLpush(redis::Client &redis) {
+
+	// standard case.
+	redis.del("x");
+	redis.del("y");
+	redis.lpush("x", "abc");
+	redis.lpush("x", "def"); // x = [def, abc]
+	redis.lpush("y", "123");
+	redis.lpush("y", "456"); // x = [456, 123]
+
+	redis::Response ret = redis.rpoplpush("x", "y");
+	assert(ret.type() == REDIS_STRING && ret.str() == "abc");	// we RPOP x, yielding abc.
+
+	ret = redis.lrange("x", 0, -1);	// only def remains in x.
+	assert(ret.type() == REDIS_LIST);
+	redis::List l = ret.array();
+	assert(l.size() == 1);
+	assert(l[0] == redis::Buffer("def"));
+
+	ret = redis.lrange("y", 0, -1);	// abc has been lpushed to y.
+	assert(ret.type() == REDIS_LIST);
+	l = ret.array();
+	assert(l.size() == 3);
+	assert(l[0] == redis::Buffer("abc"));
+	assert(l[1] == redis::Buffer("456"));
+	assert(l[2] == redis::Buffer("123"));
+
+	// with an empty source, expecting no change.
+	redis.del("x");
+	redis.del("y");
+
+	ret = redis.rpoplpush("x", "y");
+	assert(ret.type() == REDIS_ERR);
+
+	ret = redis.lrange("x", 0, -1);	// x is still empty
+	assert(ret.type() == REDIS_LIST && ret.size() == 0);
+	ret = redis.lrange("y", 0, -1);	// y is still empty
+	assert(ret.type() == REDIS_LIST && ret.size() == 0);
+}
 
 
 int main() {
@@ -790,6 +829,7 @@ int main() {
 	testLtrim(r);
 	testLset(r);
 	testLrange(r);
+	testRpopLpush(r);
 
 
 	cout << endl << tests_passed << " tests passed, " << tests_failed << " failed." << endl;

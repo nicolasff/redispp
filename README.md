@@ -56,7 +56,7 @@ It is released under the [New BSD License](http://www.opensource.org/licenses/bs
 
 * lpush (**TESTED**)
 * rpush (**TESTED**)
-* rpoplpush
+* rpoplpush (**TESTED**)
 * llen (**TESTED**)
 * lpop (**TESTED**)
 * rpop (**TESTED**)
