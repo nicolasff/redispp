@@ -62,11 +62,11 @@ It is released under the [New BSD License](http://www.opensource.org/licenses/bs
 * rpop (**TESTED**)
 * blpop
 * brpop
-* ltrim
+* ltrim (**TESTED**)
 * lindex (**TESTED**)
 * lrem (**TESTED**)
-* lset
-* lrange
+* lset (**TESTED**)
+* lrange (**TESTED**)
 
 --------------------
 

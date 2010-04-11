@@ -623,6 +623,140 @@ testLrem(redis::Client &redis) {
 	assert(ret.type() == REDIS_ERR);
 }
 
+void
+testLtrim(redis::Client &redis) {
+
+	redis.del("list");
+	redis.lpush("list", "val0");
+	redis.lpush("list", "val1");
+	redis.lpush("list", "val2");
+	redis.lpush("list", "val3");
+
+	redis::Response ret = redis.ltrim("list", 0, 2);
+	assert(ret.type() == REDIS_BOOL && ret.boolVal());
+
+	ret = redis.llen("list");
+	assert(ret.type() == REDIS_LONG && ret.value() == 3);
+
+	redis.ltrim("list", 0, 0);
+	ret = redis.llen("list");
+	assert(ret.type() == REDIS_LONG && ret.value() == 1);
+
+	ret = redis.lpop("list");
+	assert(ret.type() == REDIS_STRING && ret.str() == "val3");
+
+	ret = redis.ltrim("list", 10, 10000);
+	assert(ret.type() == REDIS_BOOL && ret.boolVal());
+	ret = redis.ltrim("list", 10000, 10);
+	assert(ret.type() == REDIS_BOOL && ret.boolVal());
+
+	// test invalid type
+	redis.set("list", "not a list...");
+	ret = redis.ltrim("list", 0, 1);
+	assert(ret.type() == REDIS_BOOL && ret.boolVal() == false);
+}
+
+void
+testLset(redis::Client &redis) {
+
+	redis.del("list");
+	redis.lpush("list", "val0");
+	redis.lpush("list", "val1");
+	redis.lpush("list", "val2");
+
+	redis::Response ret = redis.lindex("list", 0);
+	assert(ret.type() == REDIS_STRING && ret.str() == "val2");
+	ret = redis.lindex("list", 1);
+	assert(ret.type() == REDIS_STRING && ret.str() == "val1");
+	ret = redis.lindex("list", 2);
+	assert(ret.type() == REDIS_STRING && ret.str() == "val0");
+
+	ret = redis.lset("list", 1, "valx");
+	assert(ret.type() == REDIS_BOOL && ret.boolVal() == true);
+
+	ret = redis.lindex("list", 0);
+	assert(ret.type() == REDIS_STRING && ret.str() == "val2");
+	ret = redis.lindex("list", 1);
+	assert(ret.type() == REDIS_STRING && ret.str() == "valx");
+	ret = redis.lindex("list", 2);
+	assert(ret.type() == REDIS_STRING && ret.str() == "val0");
+}
+
+void
+testLrange(redis::Client &redis) {
+
+	redis::Buffer b;
+	redis::List l;
+
+	redis.del("list");
+	redis.lpush("list", "val0");
+	redis.lpush("list", "val1");
+	redis.lpush("list", "val2");
+
+	// pos :   0     1     2
+	// pos :  -3    -2    -1
+	// list: [val2, val1, val0]
+
+	redis::Response ret = redis.lrange("list", 0, 0);
+	assert(ret.type() == REDIS_LIST);
+	l = ret.array();
+	assert(l.size() == 1);
+	assert(l[0] == redis::Buffer("val2"));
+
+	ret = redis.lrange("list", 0, 1);
+	assert(ret.type() == REDIS_LIST);
+	l = ret.array();
+	assert(l.size() == 2);
+	assert(l[0] == redis::Buffer("val2"));
+	assert(l[1] == redis::Buffer("val1"));
+
+	ret = redis.lrange("list", 0, 2);
+	assert(ret.type() == REDIS_LIST);
+	l = ret.array();
+	assert(l.size() == 3);
+	assert(l[0] == redis::Buffer("val2"));
+	assert(l[1] == redis::Buffer("val1"));
+	assert(l[2] == redis::Buffer("val0"));
+
+	ret = redis.lrange("list", 0, 3);
+	assert(ret.type() == REDIS_LIST);
+	l = ret.array();
+	assert(l.size() == 3);
+	assert(l[0] == redis::Buffer("val2"));
+	assert(l[1] == redis::Buffer("val1"));
+	assert(l[2] == redis::Buffer("val0"));
+
+	ret = redis.lrange("list", 0, -1);
+	assert(ret.type() == REDIS_LIST);
+	l = ret.array();
+	assert(l.size() == 3);
+	assert(l[0] == redis::Buffer("val2"));
+	assert(l[1] == redis::Buffer("val1"));
+	assert(l[2] == redis::Buffer("val0"));
+
+	ret = redis.lrange("list", 0, -2);
+	assert(ret.type() == REDIS_LIST);
+	l = ret.array();
+	assert(l.size() == 2);
+	assert(l[0] == redis::Buffer("val2"));
+	assert(l[1] == redis::Buffer("val1"));
+
+	ret = redis.lrange("list", -2, -1);
+	assert(ret.type() == REDIS_LIST);
+	l = ret.array();
+	assert(l.size() == 2);
+	assert(l[0] == redis::Buffer("val1"));
+	assert(l[1] == redis::Buffer("val0"));
+
+	redis.del("list");
+	ret = redis.lrange("list", 0, -1);
+	assert(ret.type() == REDIS_LIST);
+	l = ret.array();
+	assert(l.size() == 0);
+}
+
+
+
 int main() {
 
 	redis::Client r;
@@ -653,6 +787,9 @@ int main() {
 	testLlen(r);
 	testLindex(r);
 	testLrem(r);
+	testLtrim(r);
+	testLset(r);
+	testLrange(r);
 
 
 	cout << endl << tests_passed << " tests passed, " << tests_failed << " failed." << endl;
