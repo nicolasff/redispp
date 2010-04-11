@@ -378,6 +378,39 @@ testKeys(redis::Client &redis) {
 	assert(ret.type() == REDIS_LIST && ret.size() == 0);
 }
 
+void
+testDelete(redis::Client &redis) {
+
+	redis.set("key", "val");
+	redis::Response ret = redis.del("key");
+	assert(ret.type() == REDIS_LONG && ret.value() == 1);
+
+	// multiple, all existing
+	redis.set("x", "0");
+	redis.set("y", "1");
+	redis.set("z", "2");
+	redis::List l;
+	l.push_back("x");
+	l.push_back("y");
+	l.push_back("z");
+	ret = redis.del(l);
+	assert(ret.type() == REDIS_LONG && ret.value() == 3);
+
+	// multiple, none existing
+	ret = redis.del(l);
+	assert(ret.type() == REDIS_LONG && ret.value() == 0);
+	
+	// multiple, some existing
+	redis.set("y", "1");
+	ret = redis.del(l);
+	assert(ret.type() == REDIS_LONG && ret.value() == 1);
+
+	redis.set("x", "0");
+	redis.set("y", "1");
+	ret = redis.del(l);
+	assert(ret.type() == REDIS_LONG && ret.value() == 2);
+}
+
 
 int main() {
 
@@ -402,6 +435,7 @@ int main() {
 	testDecr(r);
 	testExists(r);
 	testKeys(r);
+	testDelete(r);
 
 
 	cout << endl << tests_passed << " tests passed, " << tests_failed << " failed." << endl;
