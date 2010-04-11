@@ -23,6 +23,7 @@ public:
 	static const int SET = 3;
 	static const int ZSET = 4;
 	static const int HASH = 5;
+	static const int NONE = 6;
 
 	bool connect(std::string host = "127.0.0.1", short port = 6379);
 	

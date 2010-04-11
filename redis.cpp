@@ -305,6 +305,9 @@ Client::read_type_reply() {
 	} else if(t == "hash") {
 		ret.setLong(Client::HASH);
 		return ret;
+	} else if(t == "none") {
+		ret.setLong(Client::NONE);
+		return ret;
 	}
 	return err;
 }
@@ -516,7 +519,6 @@ Client::read_info_reply() {
 	Response ret = read_string();
 
 	if(ret.type() != REDIS_STRING) {
-		cout << "FAIL" << endl;
 		return Response(REDIS_ERR);
 	}
 

@@ -437,6 +437,11 @@ testType(redis::Client &redis) {
 	redis.hset("key", "field", "val");
 	ret = redis.type("key");
 	assert(ret.type() == REDIS_LONG && ret.value() == redis::Client::HASH);
+
+	redis.del("key");
+	ret = redis.type("key");
+	assert(ret.type() == REDIS_LONG && ret.value() == redis::Client::NONE);
+
 }
 
 
