@@ -499,6 +499,37 @@ testRPushRPop(redis::Client &redis) {
 	assert(ret.type() == REDIS_STRING && ::memcmp(s.c_str(),"v\0a\0l\0", 6) == 0);
 }
 
+void
+testLlen(redis::Client &redis) {
+
+	redis.del("list");
+	redis.lpush("list", "val");
+
+	redis::Response ret = redis.llen("list");
+	assert(ret.type() == REDIS_LONG && ret.value() == 1);
+
+	redis.lpush("list", "val2");
+	ret = redis.llen("list");
+	assert(ret.type() == REDIS_LONG && ret.value() == 2);
+
+	ret = redis.lpop("list");
+	assert(ret.type() == REDIS_STRING && ret.str() == "val2");
+	ret = redis.llen("list");
+	assert(ret.type() == REDIS_LONG && ret.value() == 1);
+
+	ret = redis.lpop("list");
+	assert(ret.type() == REDIS_STRING && ret.str() == "val");
+	ret = redis.llen("list");
+	assert(ret.type() == REDIS_LONG && ret.value() == 0); // empty list is 0
+
+	redis.del("list");
+	ret = redis.llen("list");
+	assert(ret.type() == REDIS_LONG && ret.value() == 0); // non-existent list is 0
+
+	redis.set("list", "actually not a list");
+	ret = redis.llen("list");
+	assert(ret.type() == REDIS_ERR); // not a list: error
+}
 
 int main() {
 
@@ -527,6 +558,7 @@ int main() {
 	testType(r);
 	testLPushLPop(r);
 	testRPushRPop(r);
+	testLlen(r);
 
 
 	cout << endl << tests_passed << " tests passed, " << tests_failed << " failed." << endl;
