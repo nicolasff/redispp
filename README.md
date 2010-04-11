@@ -22,7 +22,7 @@ It is released under the [New BSD License](http://www.opensource.org/licenses/bs
 * renamenx (**TESTED**)
 * ttl
 * ping (**TESTED**)
-* setnx
+* setnx (**TESTED**)
 * exists
 * randomkey
 * del (**TESTED**)

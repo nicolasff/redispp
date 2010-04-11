@@ -271,6 +271,25 @@ testExpireAt(redis::Client &redis) {
 	assert(ret.type() == REDIS_ERR);
 }
 
+void
+testSetNX(redis::Client &redis) {
+
+	redis.set("key", "42");
+	redis::Response ret = redis.setnx("key", "err");
+	assert(ret.type() == REDIS_BOOL && !ret.boolVal());
+
+	ret = redis.get("key");
+	assert(ret.type() == REDIS_STRING && ret.str() == "42");
+
+	redis.del("key");
+	ret = redis.setnx("key", "42");
+	assert(ret.type() == REDIS_BOOL && ret.boolVal());
+
+	ret = redis.get("key");
+	assert(ret.type() == REDIS_STRING && ret.str() == "42");
+}
+
+
 
 
 int main() {
@@ -291,6 +310,7 @@ int main() {
 	testMGet(r);
 //	testExpire(r);
 //	testExpireAt(r);
+	testSetNX(r);
 
 
 	cout << endl << tests_passed << " tests passed, " << tests_failed << " failed." << endl;
