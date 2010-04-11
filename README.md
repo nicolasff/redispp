@@ -47,7 +47,7 @@ It is released under the [New BSD License](http://www.opensource.org/licenses/bs
 * bgrewriteaof
 * move
 * sort
-* type
+* type (**TESTED**)
 * append
 * substr
 * config (`get` and `set`, not `resetstat`)

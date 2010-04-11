@@ -411,6 +411,34 @@ testDelete(redis::Client &redis) {
 	assert(ret.type() == REDIS_LONG && ret.value() == 2);
 }
 
+void
+testType(redis::Client &redis) {
+
+	redis.set("key", "val");
+	redis::Response ret = redis.type("key");
+	assert(ret.type() == REDIS_LONG && ret.value() == redis::Client::STRING);
+
+	redis.del("key");
+	redis.lpush("key", "val");
+	ret = redis.type("key");
+	assert(ret.type() == REDIS_LONG && ret.value() == redis::Client::LIST);
+
+	redis.del("key");
+	redis.sadd("key", "val");
+	ret = redis.type("key");
+	assert(ret.type() == REDIS_LONG && ret.value() == redis::Client::SET);
+
+	redis.del("key");
+	redis.zadd("key", 42, "val");
+	ret = redis.type("key");
+	assert(ret.type() == REDIS_LONG && ret.value() == redis::Client::ZSET);
+
+	redis.del("key");
+	redis.hset("key", "field", "val");
+	ret = redis.type("key");
+	assert(ret.type() == REDIS_LONG && ret.value() == redis::Client::HASH);
+}
+
 
 int main() {
 
@@ -436,6 +464,7 @@ int main() {
 	testExists(r);
 	testKeys(r);
 	testDelete(r);
+	testType(r);
 
 
 	cout << endl << tests_passed << " tests passed, " << tests_failed << " failed." << endl;

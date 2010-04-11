@@ -188,6 +188,10 @@ Client::read_single_line() {
 
 	std::string str = getline();
 	if(str[0] == '+') {
+		size_t pos = str.find('\r');
+		if(pos != string::npos) {
+			str = str.substr(0, pos);
+		}
 		Buffer s(&str[1]);
 		ret.type(REDIS_STRING);
 		ret.setString(s);
@@ -276,7 +280,7 @@ Client::read_multi_bulk() {
 }
 Response
 Client::read_type_reply() {
-	Response ret = read_string();
+	Response ret = read_single_line();
 	Response err(REDIS_ERR);
 
 	if(ret.type() != REDIS_STRING) {
@@ -286,19 +290,19 @@ Client::read_type_reply() {
 	ret.type(REDIS_LONG);
 
 	string t = ret.str();
-	if(t == "+string") {
+	if(t == "string") {
 		ret.setLong(Client::STRING);
 		return ret;
-	} else if(t == "+list") {
+	} else if(t == "list") {
 		ret.setLong(Client::LIST);
 		return ret;
-	} else if(t == "+set") {
+	} else if(t == "set") {
 		ret.setLong(Client::SET);
 		return ret;
-	} else if(t == "+zset") {
+	} else if(t == "zset") {
 		ret.setLong(Client::ZSET);
 		return ret;
-	} else if(t == "+hash") {
+	} else if(t == "hash") {
 		ret.setLong(Client::HASH);
 		return ret;
 	}
