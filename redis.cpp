@@ -470,12 +470,12 @@ Client::del(Buffer key) {
 	return run(cmd, &Client::read_integer);
 }
 Response
-Client::del(RedisList keys) {
+Client::del(List keys) {
 	return generic_multi_parameter("DEL", keys, &Client::read_integer);
 }
 
 Response
-Client::mget(RedisList keys) {
+Client::mget(List keys) {
 	return generic_multi_parameter("MGET", keys, &Client::read_multi_bulk);
 }
 
@@ -489,13 +489,13 @@ Client::expireat(Buffer key, long timestamp) {
 }
 
 Response
-Client::mset(RedisList keys, RedisList vals) {
+Client::mset(List keys, List vals) {
 
 	return generic_mset("MSET", keys, vals, &Client::read_status_code);
 }
 
 Response
-Client::msetnx(RedisList keys, RedisList vals) {
+Client::msetnx(List keys, List vals) {
 
 	return generic_mset("MSETNX", keys, vals, &Client::read_integer_as_bool);
 }
@@ -625,12 +625,12 @@ Client::rpop(Buffer key) {
 }
 
 Response
-Client::blpop(RedisList keys, int timeout) {
+Client::blpop(List keys, int timeout) {
 	return generic_blocking_pop("BLPOP", keys, timeout);
 }
 
 Response
-Client::brpop(RedisList keys, int timeout) {
+Client::brpop(List keys, int timeout) {
 	return generic_blocking_pop("BRPOP", keys, timeout);
 }
 
@@ -711,27 +711,27 @@ Client::smove(Buffer src, Buffer dst, Buffer member) {
 }
 
 Response
-Client::sinter(RedisList keys) {
+Client::sinter(List keys) {
 	return generic_multi_parameter("SINTER", keys, &Client::read_multi_bulk);
 }
 Response
-Client::sunion(RedisList keys) {
+Client::sunion(List keys) {
 	return generic_multi_parameter("SUNION", keys, &Client::read_multi_bulk);
 }
 Response
-Client::sdiff(RedisList keys) {
+Client::sdiff(List keys) {
 	return generic_multi_parameter("SDIFF", keys, &Client::read_multi_bulk);
 }
 Response
-Client::sinterstore(RedisList keys) {
+Client::sinterstore(List keys) {
 	return generic_multi_parameter("SINTERSTORE", keys, &Client::read_integer);
 }
 Response
-Client::sunionstore(RedisList keys) {
+Client::sunionstore(List keys) {
 	return generic_multi_parameter("SUNIONSTORE", keys, &Client::read_integer);
 }
 Response
-Client::sdiffstore(RedisList keys) {
+Client::sdiffstore(List keys) {
 	return generic_multi_parameter("SDIFFSTORE", keys, &Client::read_integer);
 }
 
@@ -827,45 +827,45 @@ Client::zrangebyscore(Buffer key, long min, long max, long start, long end, bool
 }
 
 Response
-Client::zunion(Buffer key, RedisList keys) {
+Client::zunion(Buffer key, List keys) {
 	vector<double> v;
 	return zunion(key, keys, v, "");
 }
 Response
-Client::zunion(Buffer key, RedisList keys, string aggregate) {
+Client::zunion(Buffer key, List keys, string aggregate) {
 	vector<double> v;
 	return zunion(key, keys, v, aggregate);
 }
 Response
-Client::zunion(Buffer key, RedisList keys, vector<double> weights) {
+Client::zunion(Buffer key, List keys, vector<double> weights) {
 	return zunion(key, keys, weights, "");
 }
 Response
-Client::zunion(Buffer key, RedisList keys, vector<double> weights, string aggregate) {
+Client::zunion(Buffer key, List keys, vector<double> weights, string aggregate) {
 	return generic_z_set_operation("ZUNION", key, keys, weights, aggregate);
 }
 
 Response
-Client::zinter(Buffer key, RedisList keys) {
+Client::zinter(Buffer key, List keys) {
 	vector<double> v;
 	return zunion(key, keys, v, "");
 }
 Response
-Client::zinter(Buffer key, RedisList keys, string aggregate) {
+Client::zinter(Buffer key, List keys, string aggregate) {
 	vector<double> v;
 	return zunion(key, keys, v, aggregate);
 }
 Response
-Client::zinter(Buffer key, RedisList keys, vector<double> weights) {
+Client::zinter(Buffer key, List keys, vector<double> weights) {
 	return zunion(key, keys, weights, "");
 }
 Response
-Client::zinter(Buffer key, RedisList keys, vector<double> weights, string aggregate) {
+Client::zinter(Buffer key, List keys, vector<double> weights, string aggregate) {
 	return generic_z_set_operation("ZINTER", key, keys, weights, aggregate);
 }
 
 Response
-Client::generic_z_set_operation(string keyword, Buffer key, RedisList keys,
+Client::generic_z_set_operation(string keyword, Buffer key, List keys,
 		vector<double> weights, string aggregate) {
 
 	if(weights.size() != 0 && keys.size() != weights.size()) {
@@ -874,7 +874,7 @@ Client::generic_z_set_operation(string keyword, Buffer key, RedisList keys,
 	Command cmd(keyword);
 	cmd << key << (long)keys.size();
 
-	RedisList::const_iterator i_key;
+	List::const_iterator i_key;
 	for(i_key = keys.begin(); i_key != keys.end(); i_key++) {
 		cmd << *i_key;
 	}
@@ -983,9 +983,9 @@ Client::generic_zrank(string keyword, Buffer key, Buffer member) {
 }
 
 Response
-Client::generic_multi_parameter(string keyword, RedisList &keys, ResponseReader fun) {
+Client::generic_multi_parameter(string keyword, List &keys, ResponseReader fun) {
 	Command cmd(keyword);
-	RedisList::const_iterator key;
+	List::const_iterator key;
 	for(key = keys.begin(); key != keys.end(); key++) {
 		cmd << *key;
 	}
@@ -1048,15 +1048,15 @@ Client::generic_card(string keyword, Buffer key) {
 }
 
 Response
-Client::generic_mset(string keyword, RedisList keys, RedisList vals, ResponseReader fun) {
+Client::generic_mset(string keyword, List keys, List vals, ResponseReader fun) {
 
 	if(keys.size() != vals.size() || keys.size() == 0) {
 		return Response(REDIS_ERR);
 	}
 
 	Command cmd(keyword);
-	RedisList::const_iterator key;
-	RedisList::const_iterator val;
+	List::const_iterator key;
+	List::const_iterator val;
 	for(key = keys.begin(), val = vals.begin(); key != keys.end(); key++, val++) {
 		cmd << *key << *val;
 	}
@@ -1073,11 +1073,11 @@ Client::generic_h_simple_list(string keyword, Buffer key) {
 }
 
 Response
-Client::generic_blocking_pop(string keyword, RedisList keys, int timeout) {
+Client::generic_blocking_pop(string keyword, List keys, int timeout) {
 
 	Command cmd(keyword);
 	
-	RedisList::const_iterator key;
+	List::const_iterator key;
 	for(key = keys.begin(); key != keys.end(); key++) {
 		cmd << *key;
 	}

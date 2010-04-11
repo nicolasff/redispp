@@ -58,12 +58,12 @@ public:
 	Response setnx(Buffer src, Buffer dst);
 	Response exists(Buffer key);
 	Response del(Buffer key);
-	Response del(RedisList key);
-	Response mget(RedisList keys);
+	Response del(List key);
+	Response mget(List keys);
 	Response expire(Buffer key, long ttl);
 	Response expireat(Buffer key, long timestamp);
-	Response mset(RedisList keys, RedisList vals);
-	Response msetnx(RedisList keys, RedisList vals);
+	Response mset(List keys, List vals);
+	Response msetnx(List keys, List vals);
 	Response info();
 
 	Response lpush(Buffer key, Buffer val);
@@ -72,8 +72,8 @@ public:
 	Response llen(Buffer key);
 	Response lpop(Buffer key);
 	Response rpop(Buffer key);
-	Response blpop(RedisList keys, int timeout);
-	Response brpop(RedisList keys, int timeout);
+	Response blpop(List keys, int timeout);
+	Response brpop(List keys, int timeout);
 	Response ltrim(Buffer key, int start, int end);
 	Response lindex(Buffer key, int pos);
 	Response lrem(Buffer key, int count, Buffer val);
@@ -87,12 +87,12 @@ public:
 	Response sismember(Buffer key, Buffer val);
 	Response srandmember(Buffer key);
 	Response smove(Buffer src, Buffer dst, Buffer member);
-	Response sinter(RedisList keys);
-	Response sunion(RedisList keys);
-	Response sdiff(RedisList keys);
-	Response sinterstore(RedisList keys);
-	Response sunionstore(RedisList keys);
-	Response sdiffstore(RedisList keys);
+	Response sinter(List keys);
+	Response sunion(List keys);
+	Response sdiff(List keys);
+	Response sinterstore(List keys);
+	Response sunionstore(List keys);
+	Response sdiffstore(List keys);
 
 	Response zadd(Buffer key, double score, Buffer member);
 	Response zrem(Buffer key, Buffer member);
@@ -109,15 +109,15 @@ public:
 	Response zrangebyscore(Buffer key, long min, long max, bool withscores = false);
 	Response zrangebyscore(Buffer key, long min, long max, long start, long end, bool withscores = false);
 
-	Response zunion(Buffer key, RedisList keys);
-	Response zunion(Buffer key, RedisList keys, std::string aggregate);
-	Response zunion(Buffer key, RedisList keys, std::vector<double> weights);
-	Response zunion(Buffer key, RedisList keys, std::vector<double> weights, std::string aggregate);
+	Response zunion(Buffer key, List keys);
+	Response zunion(Buffer key, List keys, std::string aggregate);
+	Response zunion(Buffer key, List keys, std::vector<double> weights);
+	Response zunion(Buffer key, List keys, std::vector<double> weights, std::string aggregate);
 
-	Response zinter(Buffer key, RedisList keys);
-	Response zinter(Buffer key, RedisList keys, std::string aggregate);
-	Response zinter(Buffer key, RedisList keys, std::vector<double> weights);
-	Response zinter(Buffer key, RedisList keys, std::vector<double> weights, std::string aggregate);
+	Response zinter(Buffer key, List keys);
+	Response zinter(Buffer key, List keys, std::string aggregate);
+	Response zinter(Buffer key, List keys, std::vector<double> weights);
+	Response zinter(Buffer key, List keys, std::vector<double> weights, std::string aggregate);
 
 	Response hset(Buffer key, Buffer field, Buffer val);
 	Response hget(Buffer key, Buffer field);
@@ -143,16 +143,16 @@ private:
 	Response generic_pop(std::string keyword, Buffer key);
 	Response generic_list_item_action(std::string keyword, Buffer key, int n, Buffer val, ResponseReader fun);
 	Response generic_set_key_value(std::string keyword, Buffer key, Buffer val);
-	Response generic_multi_parameter(std::string keyword, RedisList &keys, ResponseReader fun);
+	Response generic_multi_parameter(std::string keyword, List &keys, ResponseReader fun);
 	Response generic_zrank(std::string keyword, Buffer key, Buffer member);
 	Response generic_zrange(std::string keyword, Buffer key, long start, long end, bool withscores);
 	Response generic_z_start_end_int(std::string keyword, Buffer key, long start, long end);
 	Response generic_card(std::string keyword, Buffer key);
-	Response generic_z_set_operation(std::string keyword, Buffer key, RedisList keys,
+	Response generic_z_set_operation(std::string keyword, Buffer key, List keys,
 		std::vector<double> weights, std::string aggregate);
-	Response generic_mset(std::string keyword, RedisList keys, RedisList vals, ResponseReader fun);
+	Response generic_mset(std::string keyword, List keys, List vals, ResponseReader fun);
 	Response generic_h_simple_list(std::string keyword, Buffer key);
-	Response generic_blocking_pop(std::string keyword, RedisList keys, int timeout);
+	Response generic_blocking_pop(std::string keyword, List keys, int timeout);
 
 	
 	Response read_string();

@@ -1,6 +1,7 @@
 #include "redis.h"
 #include <iostream>
 #include <string>
+#include <cstring>
 
 int tests_passed = 0;
 int tests_failed = 0;
@@ -199,6 +200,41 @@ testRenameNx(redis::Client &redis) {
 	assert(&ret.array()[1][0] == string("val0"));
 }
 
+void
+testMGet(redis::Client &redis) {
+	redis.del("k1");
+	redis.del("k2");
+	redis.del("k3");
+
+	redis.set("k1", "v1");
+	redis.set("k2", "v2");
+	redis.set("k3", "v3");
+
+	// mget(array("k1")) == array("v1")
+	redis::List l;
+	l.push_back(redis::Buffer("k1"));
+	redis::Response ret = redis.mget(l);
+	assert(ret.type() == REDIS_LIST && ret.size() == 1);
+	assert(::memcmp(&ret.array()[0][0], "v1", 2) == 0);
+
+	l.clear();
+	l.push_back(redis::Buffer("k1"));
+	l.push_back(redis::Buffer("k2"));
+	l.push_back(redis::Buffer("k3"));
+	ret = redis.mget(l);
+	assert(ret.type() == REDIS_LIST && ret.size() == 3);
+	assert(::memcmp(&ret.array()[0][0], "v1", 2) == 0);
+	assert(::memcmp(&ret.array()[1][0], "v2", 2) == 0);
+	assert(::memcmp(&ret.array()[2][0], "v3", 2) == 0);
+
+	// TODO: test with an invalid key.
+	l.clear();
+	l.push_back(redis::Buffer("k1"));
+	l.push_back(redis::Buffer("k3"));
+	l.push_back(redis::Buffer("NoKey"));
+	ret = redis.mget(l);
+    }
+
 
 
 int main() {
@@ -216,6 +252,7 @@ int main() {
 	testRandomKey(r);
 	testRename(r);
 	testRenameNx(r);
+	testMGet(r);
 
 
 	cout << endl << tests_passed << " tests passed, " << tests_failed << " failed." << endl;

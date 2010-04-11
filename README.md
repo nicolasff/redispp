@@ -27,7 +27,7 @@ It is released under the [New BSD License](http://www.opensource.org/licenses/bs
 * randomkey
 * del (**TESTED**)
 * mget
-* mset
+* mset (**NOT ENTIRELY TESTED**)
 * msetnx
 * expire
 * expireat

@@ -15,7 +15,7 @@ class Buffer : public std::vector<char> {
 
 };
 
-typedef std::vector<Buffer> RedisList;
+typedef std::vector<Buffer> List;
 
 }
 
