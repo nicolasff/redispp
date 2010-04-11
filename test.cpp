@@ -233,7 +233,43 @@ testMGet(redis::Client &redis) {
 	l.push_back(redis::Buffer("k3"));
 	l.push_back(redis::Buffer("NoKey"));
 	ret = redis.mget(l);
-    }
+}
+
+
+void
+testExpire(redis::Client &redis) {
+
+	redis.del("key");
+	redis.set("key", "value");
+
+	redis::Response ret = redis.get("key");
+	assert(ret.type() == REDIS_STRING && ret.str() == "value");
+
+	redis.expire("key", 1);
+	assert(ret.type() == REDIS_STRING && ret.str() == "value");
+	sleep(2);
+
+	ret = redis.get("key");
+	assert(ret.type() == REDIS_ERR);
+}
+
+void
+testExpireAt(redis::Client &redis) {
+
+	redis.del("key");
+	redis.set("key", "value");
+
+	redis::Response ret = redis.get("key");
+	assert(ret.type() == REDIS_STRING && ret.str() == "value");
+
+	time_t now = time(0);
+	redis.expireat("key", now + 1);
+	assert(ret.type() == REDIS_STRING && ret.str() == "value");
+	sleep(2);
+
+	ret = redis.get("key");
+	assert(ret.type() == REDIS_ERR);
+}
 
 
 
@@ -253,6 +289,8 @@ int main() {
 	testRename(r);
 	testRenameNx(r);
 	testMGet(r);
+//	testExpire(r);
+//	testExpireAt(r);
 
 
 	cout << endl << tests_passed << " tests passed, " << tests_failed << " failed." << endl;

@@ -29,8 +29,8 @@ It is released under the [New BSD License](http://www.opensource.org/licenses/bs
 * mget
 * mset (**NOT ENTIRELY TESTED**)
 * msetnx
-* expire
-* expireat
+* expire (**TESTED**)
+* expireat (**TESTED**)
 * info
 * multi
 * exec
