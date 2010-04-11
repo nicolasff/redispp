@@ -441,6 +441,35 @@ testType(redis::Client &redis) {
 	redis.del("key");
 	ret = redis.type("key");
 	assert(ret.type() == REDIS_LONG && ret.value() == redis::Client::NONE);
+}
+
+void
+testLPushLPop(redis::Client &redis) {
+
+	redis.del("key");
+	redis::Response ret = redis.lpush("key", "val0");
+	assert(ret.type() == REDIS_LONG && ret.value() == 1);
+	ret = redis.lpush("key", "val1");
+	assert(ret.type() == REDIS_LONG && ret.value() == 2);
+	ret = redis.lpush("key", "val2");
+	assert(ret.type() == REDIS_LONG && ret.value() == 3);
+
+	ret = redis.lpop("key");
+	assert(ret.type() == REDIS_STRING && ret.str() == "val2");
+	ret = redis.lpop("key");
+	assert(ret.type() == REDIS_STRING && ret.str() == "val1");
+	ret = redis.lpop("key");
+	assert(ret.type() == REDIS_STRING && ret.str() == "val0");
+	ret = redis.lpop("key");
+	assert(ret.type() == REDIS_ERR);
+
+	// binary push
+	ret = redis.lpush("key", redis::Buffer("v\0a\0l\0", 6));
+	assert(ret.type() == REDIS_LONG && ret.value() == 1);
+	ret = redis.lpop("key");
+	string s = ret.str();
+	assert(ret.type() == REDIS_STRING && ::memcmp(s.c_str(),"v\0a\0l\0", 6) == 0);
+
 
 }
 
@@ -470,6 +499,7 @@ int main() {
 	testKeys(r);
 	testDelete(r);
 	testType(r);
+	testLPushLPop(r);
 
 
 	cout << endl << tests_passed << " tests passed, " << tests_failed << " failed." << endl;
