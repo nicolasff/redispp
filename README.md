@@ -14,10 +14,10 @@ It is released under the [New BSD License](http://www.opensource.org/licenses/bs
 * get (**TESTED**)
 * set (**TESTED**)
 * getset (**TESTED**)
-* incr
-* incrby
-* decr
-* decrby
+* incr (**TESTED**)
+* incrby (**TESTED**)
+* decr (**TESTED**)
+* decrby (**TESTED**)
 * rename (**TESTED**)
 * renamenx (**TESTED**)
 * ttl

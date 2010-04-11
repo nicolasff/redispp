@@ -289,6 +289,52 @@ testSetNX(redis::Client &redis) {
 	assert(ret.type() == REDIS_STRING && ret.str() == "42");
 }
 
+void
+testIncr(redis::Client &redis) {
+
+	redis.set("key", "0");
+	redis.incr("key");
+
+	redis::Response ret = redis.get("key");
+	assert(ret.type() == REDIS_STRING && ret.str() == "1");
+	redis.incr("key");
+
+	ret = redis.get("key");
+	assert(ret.type() == REDIS_STRING && ret.str() == "2");
+
+	redis.incr("key", 3);
+	ret = redis.get("key");
+	assert(ret.type() == REDIS_STRING && ret.str() == "5");
+
+	// increment a non-numeric string
+	redis.del("key");
+	redis.set("key", "abc");
+	redis.incr("key");
+	ret = redis.get("key");
+	assert(ret.type() == REDIS_STRING && ret.str() == "1");
+
+	redis.incr("key");
+	ret = redis.get("key");
+	assert(ret.type() == REDIS_STRING && ret.str() == "2");
+}
+
+void
+testDecr(redis::Client &redis) {
+
+	redis.set("key", "5");
+	redis.decr("key");
+
+	redis::Response ret = redis.get("key");
+	assert(ret.type() == REDIS_STRING && ret.str() == "4");
+	redis.decr("key");
+
+	ret = redis.get("key");
+	assert(ret.type() == REDIS_STRING && ret.str() == "3");
+
+	redis.decr("key", 2);
+	ret = redis.get("key");
+	assert(ret.type() == REDIS_STRING && ret.str() == "1");
+}
 
 
 
@@ -311,6 +357,8 @@ int main() {
 //	testExpire(r);
 //	testExpireAt(r);
 	testSetNX(r);
+	testIncr(r);
+	testDecr(r);
 
 
 	cout << endl << tests_passed << " tests passed, " << tests_failed << " failed." << endl;
