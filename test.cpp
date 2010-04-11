@@ -155,6 +155,51 @@ testRename(redis::Client &redis) {
 	assert(&ret.array()[1][0] == string("val0"));
 }
 
+void
+testRenameNx(redis::Client &redis) {
+
+	// strings
+	redis.del("key0");
+	redis.set("key0", "val0");
+	redis.set("key1", "val1");
+	redis::Response ret = redis.renamenx("key0", "key1");
+	assert(ret.type() == REDIS_BOOL && ret.boolVal() == false);
+	ret = redis.get("key0");
+	assert(ret.type() == REDIS_STRING && ret.str() == "val0");
+	ret = redis.get("key1");
+	assert(ret.type() == REDIS_STRING && ret.str() == "val1");
+
+	// lists
+	redis.del("key0");
+	redis.del("key1");
+	redis.lpush("key0", "val0");
+	redis.lpush("key0", "val1");
+	redis.lpush("key1", "val1-0");
+	redis.lpush("key1", "val1-1");
+	redis.renamenx("key0", "key1");
+
+	ret = redis.lrange("key0", 0, -1);
+	assert(ret.type() == REDIS_LIST && ret.size() == 2);
+	assert(&ret.array()[0][0] == string("val1"));
+	assert(&ret.array()[1][0] == string("val0"));
+
+	ret = redis.lrange("key1", 0, -1);
+	assert(ret.type() == REDIS_LIST && ret.size() == 2);
+	assert(&ret.array()[0][0] == string("val1-1"));
+	assert(&ret.array()[1][0] == string("val1-0"));
+
+	redis.del("key2");
+	redis.renamenx("key0", "key2");
+	ret = redis.lrange("key0", 0, -1);
+	assert(ret.type() == REDIS_LIST && ret.size() == 0);
+
+	ret = redis.lrange("key2", 0, -1);
+	assert(ret.type() == REDIS_LIST && ret.size() == 2);
+	assert(&ret.array()[0][0] == string("val1"));
+	assert(&ret.array()[1][0] == string("val0"));
+}
+
+
 
 int main() {
 
@@ -170,55 +215,11 @@ int main() {
 	testGetSet(r);
 	testRandomKey(r);
 	testRename(r);
+	testRenameNx(r);
 
 
 	cout << endl << tests_passed << " tests passed, " << tests_failed << " failed." << endl;
 
 	return 0;
 }
-	/*
-
-	cout << "set('x', 'hello world'): " << (r.set("x", "hello world").boolVal() ? "OK": "FAIL") << endl;
-
-	redis::Response resp = r.get("x");
-	if(resp.type() == REDIS_STRING) {
-		cout << "r.get('x') = " << resp.str() << endl;
-	} else {
-		cout << "FAIL" << endl;
-	}
-
-	redis::Response respx0y = r.incr(redis::Buffer("x\0y", 3));
-	if(respx0y.type() == REDIS_LONG) {
-		cout << "r.incr('x\\0y') = " << respx0y.value() << endl;
-	} else {
-		cout << "FAIL" << endl;
-	}
-
-	r.del("y");
-	r.lpush("y", "abc");
-	r.lpush("y", "def");
-
-	redis::Response rllen = r.llen("y");
-	if(rllen.type() == REDIS_LONG) {
-		cout << "LLEN y = " << rllen.value() << endl;
-	} else {
-		cout << "FAIL" << endl;
-	}
-
-	redis::Response resp_range = r.lrange("y", 0, -1);
-	cout << "lrange y 0 -1 gave me " << resp_range.size() << " items." << endl;
-
-	r.del("z");
-	r.zadd("z", 4.5, "lol");
-	redis::Response r_zscore = r.zscore("z", "lol");
-	cout << "'zscore z lol' gave me a score of " << r_zscore.doubleVal() << endl;
-
-	redis::Response r_zrange = r.zrange("z", 0, 1000);
-	cout << "'zrange z 0 1000' gave me " << r_zrange.size() << " items." << endl;
-
-	redis::Response r_zrange_withscores = r.zrange("z", 0, 1000, true);
-	cout << "'zrange z 0 1000 WITHSCORES' gave me " << r_zrange_withscores.size() << " items." << endl;
-
-	r.info();
-	*/
 

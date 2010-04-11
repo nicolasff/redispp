@@ -1,6 +1,14 @@
 This project aims to provide a stable, tested, and feature-complete C++ library for Redis.
 It is released under the [New BSD License](http://www.opensource.org/licenses/bsd-license.php).
 
+#### TODO
+* Add tests
+* Packaging: generate a .so, provide a real Makefile...
+* Enable static linking
+* Refactor to avoid useless data copies all over the place
+* Reconnect on timeouts
+* Try on Windows
+
 #### Functions implemented
 
 * get (**TESTED**)
@@ -11,7 +19,7 @@ It is released under the [New BSD License](http://www.opensource.org/licenses/bs
 * decr
 * decrby
 * rename (**TESTED**)
-* renamenx
+* renamenx (**TESTED**)
 * ttl
 * ping (**TESTED**)
 * setnx

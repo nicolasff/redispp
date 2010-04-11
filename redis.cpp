@@ -566,7 +566,7 @@ Client::renamenx(Buffer src, Buffer dst) {
 
 	Command cmd("RENAMENX");
 	cmd << src << dst;
-	return run(cmd, &Client::read_integer);
+	return run(cmd, &Client::read_integer_as_bool);
 }
 
 Response
