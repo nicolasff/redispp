@@ -55,11 +55,11 @@ It is released under the [New BSD License](http://www.opensource.org/licenses/bs
 --------------------
 
 * lpush (**TESTED**)
-* rpush
+* rpush (**TESTED**)
 * rpoplpush
 * llen
 * lpop (**TESTED**)
-* rpop
+* rpop (**TESTED**)
 * blpop
 * brpop
 * ltrim
