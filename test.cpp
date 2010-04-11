@@ -531,6 +531,39 @@ testLlen(redis::Client &redis) {
 	assert(ret.type() == REDIS_ERR); // not a list: error
 }
 
+void
+testLindex(redis::Client &redis) {
+
+	redis.del("list");
+	redis.lpush("list", "val0");
+	redis.lpush("list", "val1");
+	redis.lpush("list", "val2");
+
+	redis::Response ret = redis.lindex("list", 0);
+	assert(ret.type() == REDIS_STRING && ret.str() == "val2");
+
+	ret = redis.lindex("list", 1);
+	assert(ret.type() == REDIS_STRING && ret.str() == "val1");
+
+	ret = redis.lindex("list", 2);
+	assert(ret.type() == REDIS_STRING && ret.str() == "val0");
+
+	ret = redis.lindex("list", 3);
+	assert(ret.type() == REDIS_ERR);
+
+	ret = redis.lindex("list", -1);
+	assert(ret.type() == REDIS_STRING && ret.str() == "val0");
+
+	ret = redis.lindex("list", -2);
+	assert(ret.type() == REDIS_STRING && ret.str() == "val1");
+
+	ret = redis.lindex("list", -3);
+	assert(ret.type() == REDIS_STRING && ret.str() == "val2");
+
+	ret = redis.lindex("list", -4);
+	assert(ret.type() == REDIS_ERR);
+}
+
 int main() {
 
 	redis::Client r;
@@ -559,6 +592,7 @@ int main() {
 	testLPushLPop(r);
 	testRPushRPop(r);
 	testLlen(r);
+	testLindex(r);
 
 
 	cout << endl << tests_passed << " tests passed, " << tests_failed << " failed." << endl;
