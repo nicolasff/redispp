@@ -2,6 +2,8 @@
 #include <iostream>
 #include <string>
 #include <cstring>
+#include <cstdlib>
+#include <sstream>
 
 int tests_passed = 0;
 int tests_failed = 0;
@@ -336,6 +338,45 @@ testDecr(redis::Client &redis) {
 	assert(ret.type() == REDIS_STRING && ret.str() == "1");
 }
 
+void
+testExists(redis::Client &redis) {
+
+	redis.del("key");
+	redis::Response ret = redis.exists("key");
+	assert(ret.type() == REDIS_BOOL && ret.boolVal() == false);
+
+	redis.set("key", "value");
+	ret = redis.exists("key");
+	assert(ret.type() == REDIS_BOOL && ret.boolVal() == true);
+}
+
+void
+testKeys(redis::Client &redis) {
+
+	for(int i = 0; i < 10; ++i) {
+		stringstream s;
+		s << "keys-pattern-" << i;
+		string str = s.str();
+		redis.set(str.c_str(), "test");
+	}
+	redis.del("keys-pattern-3");
+
+	redis::Response ret = redis.keys("keys-pattern-*");
+	assert(ret.type() == REDIS_LIST);
+	redis.set("keys-pattern-3", "test");
+	redis::Response ret2 = redis.keys("keys-pattern-*");
+	assert(ret2.type() == REDIS_LIST);
+	assert(ret2.size() == 1+ret.size() && ret.size() == 9);
+
+	stringstream s;
+	for(int i = 0; i < 10; ++i) {
+		s << ::rand();
+	}
+
+	string str = s.str();
+	ret = redis.keys(str.c_str());
+	assert(ret.type() == REDIS_LIST && ret.size() == 0);
+}
 
 
 int main() {
@@ -359,6 +400,8 @@ int main() {
 	testSetNX(r);
 	testIncr(r);
 	testDecr(r);
+	testExists(r);
+	testKeys(r);
 
 
 	cout << endl << tests_passed << " tests passed, " << tests_failed << " failed." << endl;

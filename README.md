@@ -23,7 +23,7 @@ It is released under the [New BSD License](http://www.opensource.org/licenses/bs
 * ttl
 * ping (**TESTED**)
 * setnx (**TESTED**)
-* exists
+* exists (**TESTED**)
 * randomkey
 * del (**TESTED**)
 * mget
@@ -37,7 +37,7 @@ It is released under the [New BSD License](http://www.opensource.org/licenses/bs
 * discard
 * auth
 * select
-* keys
+* keys (**TESTED**)
 * dbsize
 * lastsave
 * flushdb
