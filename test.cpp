@@ -564,6 +564,65 @@ testLindex(redis::Client &redis) {
 	assert(ret.type() == REDIS_ERR);
 }
 
+void
+testLrem(redis::Client &redis) {
+
+	redis.del("list");
+	redis.lpush("list", "a");
+	redis.lpush("list", "b");
+	redis.lpush("list", "c");
+	redis.lpush("list", "c");
+	redis.lpush("list", "b");
+	redis.lpush("list", "c");
+	// ['c', 'b', 'c', 'c', 'b', 'a']
+	redis::Response ret = redis.lrem("list", 2, "b");
+	// ['c', 'c', 'c', 'a']
+	assert(ret.type() == REDIS_LONG && ret.value() == 2); // deleted 2 “b”s from the start
+	ret = redis.lindex("list", 0);
+	assert(ret.type() == REDIS_STRING && ret.str() == "c");
+	ret = redis.lindex("list", 1);
+	assert(ret.type() == REDIS_STRING && ret.str() == "c");
+	ret = redis.lindex("list", 2);
+	assert(ret.type() == REDIS_STRING && ret.str() == "c");
+	ret = redis.lindex("list", 3);
+	assert(ret.type() == REDIS_STRING && ret.str() == "a");
+
+	redis.del("list");
+	redis.lpush("list", "a");
+	redis.lpush("list", "b");
+	redis.lpush("list", "c");
+	redis.lpush("list", "c");
+	redis.lpush("list", "b");
+	redis.lpush("list", "c");
+	// ['c', 'b', 'c', 'c', 'b', 'a']
+	ret = redis.lrem("list", -2, "c");
+	// ['c', 'b', 'b', 'a']
+	assert(ret.type() == REDIS_LONG && ret.value() == 2); // deleted 2 “c”s from the end.
+	ret = redis.lindex("list", 0);
+	assert(ret.type() == REDIS_STRING && ret.str() == "c");
+	ret = redis.lindex("list", 1);
+	assert(ret.type() == REDIS_STRING && ret.str() == "b");
+	ret = redis.lindex("list", 2);
+	assert(ret.type() == REDIS_STRING && ret.str() == "b");
+	ret = redis.lindex("list", 3);
+	assert(ret.type() == REDIS_STRING && ret.str() == "a");
+
+	// remove each element
+	ret = redis.lrem("list", 0, "a");
+	assert(ret.type() == REDIS_LONG && ret.value() == 1); // deleted 1 “a”
+	ret = redis.lrem("list", 0, "x");
+	assert(ret.type() == REDIS_LONG && ret.value() == 0); // deleted no “x”
+	ret = redis.lrem("list", 0, "b");
+	assert(ret.type() == REDIS_LONG && ret.value() == 2); // deleted 2 “b”s from the start
+	ret = redis.lrem("list", 0, "c");
+	assert(ret.type() == REDIS_LONG && ret.value() == 1); // deleted 1 “a”
+
+	redis.del("list");
+	redis.set("list", "actually not a list");
+	ret = redis.lrem("list", 0, "x");
+	assert(ret.type() == REDIS_ERR);
+}
+
 int main() {
 
 	redis::Client r;
@@ -593,6 +652,7 @@ int main() {
 	testRPushRPop(r);
 	testLlen(r);
 	testLindex(r);
+	testLrem(r);
 
 
 	cout << endl << tests_passed << " tests passed, " << tests_failed << " failed." << endl;

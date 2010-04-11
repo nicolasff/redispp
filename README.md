@@ -64,7 +64,7 @@ It is released under the [New BSD License](http://www.opensource.org/licenses/bs
 * brpop
 * ltrim
 * lindex (**TESTED**)
-* lrem
+* lrem (**TESTED**)
 * lset
 * lrange
 
