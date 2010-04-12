@@ -14,10 +14,6 @@ class Response {
 
 public:
 	Response(RedisResponseType t);
-	bool setString(Buffer s);
-	bool setLong(long l);
-	bool setBool(bool b);
-	bool setDouble(double d);
 	bool addString(Buffer s);
 	bool addString(std::string key, std::string val);
 	bool addString(Buffer key, Buffer val);
@@ -26,8 +22,8 @@ public:
 	void type(RedisResponseType t);
 	RedisResponseType type() const;
 
-	template <typename T>
-	T get() const;
+	template <typename T> bool set(T t);
+	template <typename T> T get() const;
 	int size() const;
 
 private:

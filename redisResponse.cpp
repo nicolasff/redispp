@@ -12,8 +12,10 @@ Response::Response(RedisResponseType t) :
 
 }
 
+// generic setters
+template <>
 bool
-Response::setString(Buffer s) {
+Response::set<Buffer>(Buffer s) {
 	if(m_type != REDIS_STRING) {
 		return false;
 	}
@@ -21,8 +23,10 @@ Response::setString(Buffer s) {
 	m_str = s;
 	return true;
 }
+
+template <>
 bool
-Response::setLong(long l) {
+Response::set<long>(long l) {
 	if(m_type != REDIS_LONG) {
 		return false;
 	}
@@ -30,6 +34,27 @@ Response::setLong(long l) {
 	m_long = l;
 	return true;
 }
+
+template <>
+bool
+Response::set<bool>(bool b) {
+	if(m_type != REDIS_BOOL) {
+		return false;
+	}
+	m_bool = b;
+	return true;
+}
+
+template <>
+bool
+Response::set<double>(double d) {
+	if(m_type != REDIS_DOUBLE) {
+		return false;
+	}
+	m_double = d;
+	return true;
+}
+
 bool
 Response::addString(Buffer s) {
 	if(m_type != REDIS_LIST) {
@@ -68,24 +93,6 @@ Response::addZString(Buffer s, double score) {
 	return true;
 }
 
-bool
-Response::setBool(bool b) {
-	if(m_type != REDIS_BOOL) {
-		return false;
-	}
-	m_bool = b;
-	return true;
-}
-
-bool
-Response::setDouble(double d) {
-	if(m_type != REDIS_DOUBLE) {
-		return false;
-	}
-	m_double = d;
-	return true;
-}
-
 void 
 Response::type(RedisResponseType t) {
 	m_type = t;
@@ -107,6 +114,7 @@ Response::size() const {
 	return -1;
 }
 
+// getters
 template <>
 long Response::get<long>() const {
 	return m_long;

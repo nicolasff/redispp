@@ -17,13 +17,13 @@ class Client {
 public:
 	Client();
 
-	static const int ERROR = -1;
-	static const int STRING = 1;
-	static const int LIST = 2;
-	static const int SET = 3;
-	static const int ZSET = 4;
-	static const int HASH = 5;
-	static const int NONE = 6;
+	static const long ERROR = -1;
+	static const long STRING = 1;
+	static const long LIST = 2;
+	static const long SET = 3;
+	static const long ZSET = 4;
+	static const long HASH = 5;
+	static const long NONE = 6;
 
 	bool connect(std::string host = "127.0.0.1", short port = 6379);
 	

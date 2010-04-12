@@ -150,7 +150,7 @@ Client::read_string() {
 			delete[] buf;
 			// set string.
 			ret.type(REDIS_STRING);
-			ret.setString(s);
+			ret.set(s);
 		}
 		return ret;
 	}
@@ -178,7 +178,7 @@ Client::read_status_code() {
 
 	std::string str = getline();
 	if(str[0] == '+') {
-		ret.setBool(true);
+		ret.set(true);
 	}
 	return ret;
 }
@@ -194,7 +194,7 @@ Client::read_single_line() {
 		}
 		Buffer s(&str[1]);
 		ret.type(REDIS_STRING);
-		ret.setString(s);
+		ret.set(s);
 	}
 	return ret;
 }
@@ -217,7 +217,7 @@ Client::read_integer() {
 	std::string str = getline();
 	if(str[0] == ':') {
 		ret.type(REDIS_LONG);
-		ret.setLong(::atol(&str[1]));
+		ret.set(::atol(&str[1]));
 	}
 	return ret;
 }
@@ -230,7 +230,7 @@ Client::read_double() {
 	}
 	string s = ret.get<string>();
 	ret.type(REDIS_DOUBLE);
-	ret.setDouble(atof(&s[0]));
+	ret.set(atof(&s[0]));
 
 	return ret;
 }
@@ -249,7 +249,7 @@ Client::read_integer_as_bool() {
 			case 0:
 			case 1:
 				ret.type(REDIS_BOOL);
-				ret.setBool(l == 1);
+				ret.set(l == 1);
 				break;
 		}
 	}
@@ -311,22 +311,22 @@ Client::read_type_reply() {
 
 	string t = ret.get<string>();
 	if(t == "string") {
-		ret.setLong(Client::STRING);
+		ret.set(Client::STRING);
 		return ret;
 	} else if(t == "list") {
-		ret.setLong(Client::LIST);
+		ret.set(Client::LIST);
 		return ret;
 	} else if(t == "set") {
-		ret.setLong(Client::SET);
+		ret.set(Client::SET);
 		return ret;
 	} else if(t == "zset") {
-		ret.setLong(Client::ZSET);
+		ret.set(Client::ZSET);
 		return ret;
 	} else if(t == "hash") {
-		ret.setLong(Client::HASH);
+		ret.set(Client::HASH);
 		return ret;
 	} else if(t == "none") {
-		ret.setLong(Client::NONE);
+		ret.set(Client::NONE);
 		return ret;
 	}
 	return err;
