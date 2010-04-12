@@ -72,10 +72,10 @@ It is released under the [New BSD License](http://www.opensource.org/licenses/bs
 
 * sadd (**TESTED**)
 * srem (**TESTED**)
-* sismember
-* smembers
+* sismember (**TESTED**)
+* smembers (**TESTED**)
 * scard (**TESTED**)
-* spop
+* spop (**TESTED**)
 * srandmember
 * smove (**TESTED**)
 * sinter

@@ -853,6 +853,7 @@ testSrem(redis::Client &redis) {
 
 void
 testSmove(redis::Client &redis) {
+
 	redis.del("set0");
 	redis.del("set1");
 
@@ -882,10 +883,79 @@ testSmove(redis::Client &redis) {
 	assert(ret.type() == REDIS_LIST && ret.size() == 1);
 	l = ret.array();
 	assert(l[0] == redis::Buffer("val0"));
-
 }
 
+void
+testSpop(redis::Client &redis) {
 
+	redis.del("set0");
+	redis::Response ret = redis.spop("set0");
+	assert(ret.type() == REDIS_ERR);
+
+	redis.sadd("set0", "val0");
+	redis.sadd("set0", "val1");
+
+	ret = redis.spop("set0");
+	string v0 = ret.str();
+	assert(ret.type() == REDIS_STRING && (v0 == "val0" || v0 == "val1"));
+
+	ret = redis.spop("set0");
+	string v1 = ret.str();
+	assert(ret.type() == REDIS_STRING && (v1 == "val0" || v1 == "val1") && v1 != v0);
+
+	ret = redis.spop("set0");
+	assert(ret.type() == REDIS_ERR);
+}
+
+void
+testSismember(redis::Client &redis) {
+	redis.del("set");
+	redis.sadd("set", "val0");
+
+	redis::Response ret = redis.sismember("set", "val0");
+	assert(ret.type() == REDIS_BOOL && ret.boolVal());
+
+	ret = redis.sismember("set", "val1");
+	assert(ret.type() == REDIS_BOOL && !ret.boolVal());
+
+	redis.srem("set", "val0");
+
+	ret = redis.sismember("set", "val0");
+	assert(ret.type() == REDIS_BOOL && !ret.boolVal());
+}
+
+void
+testSmembers(redis::Client &redis) {
+	redis.del("set");
+
+	redis.sadd("set", "val0");
+	redis.sadd("set", "val1");
+	redis.sadd("set", "val2");
+
+	redis::List l;
+	l.push_back("val0");
+	l.push_back("val1");
+	l.push_back("val2");
+
+	redis::List lRedis;
+	redis::Response ret = redis.smembers("set");
+
+	assert(ret.type() == REDIS_LIST);
+	lRedis = ret.array();
+
+	int count = 0;
+	redis::List::const_iterator i, j;
+	for(i = l.begin(); i != l.end(); i++){
+		for(j = lRedis.begin(); j != lRedis.end(); j++){
+
+			if(*i == *j) {
+				count++;
+				break;
+			}
+		}
+	}
+	assert(count == 3);
+}
 
 int main() {
 
@@ -925,6 +995,9 @@ int main() {
 	testScard(r);
 	testSrem(r);
 	testSmove(r);
+	testSpop(r);
+	testSismember(r);
+	testSmembers(r);
 
 
 	cout << endl << tests_passed << " tests passed, " << tests_failed << " failed." << endl;
