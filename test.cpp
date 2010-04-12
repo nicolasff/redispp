@@ -1353,7 +1353,7 @@ testHstuff(redis::Client &redis) {
 	// hgetall
 	ret = redis.hgetall("h");
 	assert(ret.type() == REDIS_HASH && ret.size() == 2);
-	redis::RedisMap m = ret.map();
+	redis::RedisMap m = ret.get<redis::RedisMap>();
 	assert(m[redis::Buffer("x")] == redis::Buffer("a"));
 	assert(m[redis::Buffer("y")] == redis::Buffer("b"));
 
