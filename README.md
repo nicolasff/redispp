@@ -42,8 +42,8 @@ It is released under the [New BSD License](http://www.opensource.org/licenses/bs
 * lastsave
 * flushdb
 * flushall
-* save
-* bgsave
+* save (**TESTED**)
+* bgsave (**TESTED**)
 * bgrewriteaof
 * move
 * sort
@@ -87,33 +87,33 @@ It is released under the [New BSD License](http://www.opensource.org/licenses/bs
 
 --------------------
 
-* zadd
-* zincrby
-* zrem
-* zscore
+* zadd (**TESTED**)
+* zincrby (**TESTED**)
+* zrem (**TESTED**)
+* zscore (**TESTED**)
 * zrank
 * zrevrank
-* zrange
+* zrange (**TESTED**)
 * zrevrange
-* zcard
+* zcard (**TESTED**)
 * zcount
 * zremrangebyrank
-* zrangebyscore
-* zremrangebyscore
-* zunion
-* zinter
+* zrangebyscore (**TESTED**)
+* zremrangebyscore (**TESTED**)
+* zunion (**TESTED**)
+* zinter (**TESTED**)
 
 --------------------
 
-* hset
-* hget
-* hdel
-* hexists
-* hlen
-* hkeys
-* hvals
-* hgetall
-* hincrby
+* hset (**TESTED**)
+* hget (**TESTED**)
+* hdel (**TESTED**)
+* hexists (**TESTED**)
+* hlen (**TESTED**)
+* hkeys (**TESTED**)
+* hvals (**TESTED**)
+* hgetall (**TESTED**)
+* hincrby (**TESTED**)
 
 #### Functions not implemented
 

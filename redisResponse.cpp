@@ -42,7 +42,16 @@ Response::addString(Buffer s) {
 
 bool
 Response::addString(std::string key, std::string val) {
-	if(m_type != REDIS_INFO_MAP) {
+	if(m_type != REDIS_INFO_MAP && m_type != REDIS_HASH) {
+		return false;
+	}
+
+	return addString(Buffer(key.c_str(), 1+key.size()), Buffer(val.c_str(), 1+val.size()));
+}
+
+bool
+Response::addString(Buffer key, Buffer val) {
+	if(m_type != REDIS_INFO_MAP && m_type != REDIS_HASH) {
 		return false;
 	}
 
@@ -121,6 +130,8 @@ Response::size() const {
 		return m_array.size();
 	} else if(m_type == REDIS_ZSET) {
 		return m_zarray.size();
+	} else if(m_type == REDIS_HASH) {
+		return m_map.size();
 	}
 	return -1;
 }
@@ -128,6 +139,10 @@ Response::size() const {
 std::vector<Buffer>
 Response::array() const {
 	return m_array;
+}
+RedisMap
+Response::map() const {
+	return m_map;
 }
 
 }

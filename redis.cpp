@@ -278,6 +278,26 @@ Client::read_multi_bulk() {
 	}
 	return ret;
 }
+
+Response
+Client::read_key_value_list() {
+	Response bulk = read_multi_bulk();
+	if(bulk.type() != REDIS_LIST || (bulk.size() % 2 != 0)) {
+		return Response(REDIS_ERR);
+	}
+	redis::List l = bulk.array();
+
+	Response ret(REDIS_HASH);
+	redis::List::const_iterator i;
+	for(i = l.begin(); i != l.end(); i++) {
+		redis::Buffer key = *i;
+		i++;
+		redis::Buffer val = *i;
+		ret.addString(key, val);
+	}
+	return ret;
+}
+
 Response
 Client::read_type_reply() {
 	Response ret = read_single_line();
@@ -861,16 +881,16 @@ Client::zunion(Buffer key, List keys, vector<double> weights, string aggregate) 
 Response
 Client::zinter(Buffer key, List keys) {
 	vector<double> v;
-	return zunion(key, keys, v, "");
+	return zinter(key, keys, v, "");
 }
 Response
 Client::zinter(Buffer key, List keys, string aggregate) {
 	vector<double> v;
-	return zunion(key, keys, v, aggregate);
+	return zinter(key, keys, v, aggregate);
 }
 Response
 Client::zinter(Buffer key, List keys, vector<double> weights) {
-	return zunion(key, keys, weights, "");
+	return zinter(key, keys, weights, "");
 }
 Response
 Client::zinter(Buffer key, List keys, vector<double> weights, string aggregate) {
@@ -902,8 +922,8 @@ Client::generic_z_set_operation(string keyword, Buffer key, List keys,
 	}
 
 	if(aggregate.size()) {
-		string s = "AGGREGATE " + aggregate;
-		cmd << Buffer(s.c_str());
+		cmd << Buffer("AGGREGATE");
+		cmd << Buffer(aggregate.c_str());
 	}
 
 	return run(cmd, &Client::read_integer);
@@ -919,7 +939,7 @@ Client::hset(Buffer key, Buffer field, Buffer val) {
 }
 Response
 Client::hget(Buffer key, Buffer field) {
-	Command cmd("HSET");
+	Command cmd("HGET");
 	cmd << key << field;
 	return run(cmd, &Client::read_string);
 }
@@ -955,14 +975,16 @@ Client::hvals(Buffer key) {
 
 Response
 Client::hgetall(Buffer key) {
-	return generic_h_simple_list("HGETALL", key);
+	Command cmd("HGETALL");
+	cmd << key;
+	return run(cmd, &Client::read_key_value_list);
 }
 
 Response
 Client::hincrby(Buffer key, Buffer field, double d) {
 	Command cmd("HINCRBY");
 	cmd << key << field << d;
-	return run(cmd, &Client::read_double);
+	return run(cmd, &Client::read_integer);
 }
 
 /* generic commands below */

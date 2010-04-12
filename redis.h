@@ -167,6 +167,7 @@ private:
 	Response read_queued();
 	Response read_info_reply();
 	Response read_type_reply();
+	Response read_key_value_list();
 
 	std::string getline();
 	int m_fd;

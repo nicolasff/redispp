@@ -7,9 +7,11 @@
 #include <string>
 #include <vector>
 
-typedef std::map<std::string, std::string> RedisInfoMap;
 
 namespace redis {
+
+typedef std::map<Buffer, Buffer> RedisMap;
+
 class Command {
 
 public:

@@ -6,7 +6,7 @@
 #include <vector>
 #include <string>
 
-typedef enum {REDIS_ERR, REDIS_LONG, REDIS_STRING, REDIS_BOOL, REDIS_INFO_MAP,
+typedef enum {REDIS_ERR, REDIS_LONG, REDIS_STRING, REDIS_BOOL, REDIS_INFO_MAP, REDIS_HASH,
 	REDIS_DOUBLE, REDIS_LIST, REDIS_ZSET, REDIS_QUEUED} RedisResponseType;
 
 namespace redis {
@@ -20,6 +20,7 @@ public:
 	bool setDouble(double d);
 	bool addString(Buffer s);
 	bool addString(std::string key, std::string val);
+	bool addString(Buffer key, Buffer val);
 	bool addZString(Buffer s, double score);
 
 	void type(RedisResponseType t);
@@ -31,6 +32,7 @@ public:
 	bool boolVal() const;
 	double doubleVal() const;
 	std::vector<Buffer> array() const;
+	RedisMap map() const;
 
 	int size() const;
 
@@ -44,7 +46,7 @@ private:
 	Buffer m_str;
 	std::vector<Buffer> m_array;
 	std::vector<std::pair<double, Buffer> > m_zarray;
-	RedisInfoMap m_map;
+	RedisMap m_map;
 };
 }
 
