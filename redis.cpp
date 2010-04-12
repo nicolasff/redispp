@@ -358,10 +358,8 @@ Client::keys(Buffer pattern) {
 	return run(cmd, &Client::read_multi_bulk);
 }
 Response
-Client::dbsize(int index) {
+Client::dbsize() {
 	Command cmd("DBSIZE");
-
-	cmd << (long)index;
 	return run(cmd, &Client::read_integer);
 }
 

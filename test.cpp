@@ -1381,6 +1381,42 @@ testHstuff(redis::Client &redis) {
 	assert(ret.type() == REDIS_LONG && ret.get<long>() == 1);
 }
 
+void
+testTtl(redis::Client &redis) {
+
+	redis.set("x", "a");
+	redis.expire("x", 3);
+
+	for(int i = 3; i > 0; --i) {
+		redis::Response ret = redis.ttl("x");
+		assert(ret.type() == REDIS_LONG && ret.get<long>() == i);
+		sleep(1);
+	}
+	sleep(1);
+	redis::Response ret = redis.get("x");
+	assert(ret.type() == REDIS_ERR);
+}
+
+void
+testFlushdb(redis::Client &redis) {
+
+	redis::Response ret = redis.flushdb();
+	assert(ret.type() == REDIS_BOOL && ret.get<bool>());
+
+	ret = redis.dbsize();
+	assert(ret.type() == REDIS_LONG && ret.get<long>() == 0);
+}
+
+void
+testFlushall(redis::Client &redis) {
+
+	redis::Response ret = redis.flushall();
+	assert(ret.type() == REDIS_BOOL && ret.get<bool>());
+
+	ret = redis.dbsize();
+	assert(ret.type() == REDIS_LONG && ret.get<long>() == 0);
+}
+
 int main() {
 
 	redis::Client r;
@@ -1426,6 +1462,9 @@ int main() {
 //	testBgsave(r);
 	testZstuff(r);
 	testHstuff(r);
+//	testTtl(r);
+//	testFlushdb(r); // WARNING, THIS WILL DESTROY ALL YOUR DATA.
+//	testFlushall(r); // WARNING, THIS WILL DESTROY ALL YOUR DATA.
 
 	cout << endl << tests_passed << " tests passed, " << tests_failed << " failed." << endl;
 

@@ -20,11 +20,11 @@ It is released under the [New BSD License](http://www.opensource.org/licenses/bs
 * decrby (**TESTED**)
 * rename (**TESTED**)
 * renamenx (**TESTED**)
-* ttl
+* ttl (**TESTED**)
 * ping (**TESTED**)
 * setnx (**TESTED**)
 * exists (**TESTED**)
-* randomkey
+* randomkey (**TESTED: depends on redis issue #88**)
 * del (**TESTED**)
 * mget
 * mset (**NOT ENTIRELY TESTED**)
@@ -35,13 +35,13 @@ It is released under the [New BSD License](http://www.opensource.org/licenses/bs
 * multi
 * exec
 * discard
-* auth
+* auth (**TESTED MANUALLY**)
 * select
 * keys (**TESTED**)
-* dbsize
+* dbsize (**TESTED**)
 * lastsave
-* flushdb
-* flushall
+* flushdb (**TESTED**)
+* flushall (**TESTED**)
 * save (**TESTED**)
 * bgsave (**TESTED**)
 * bgrewriteaof

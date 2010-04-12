@@ -30,7 +30,7 @@ public:
 	Response auth(Buffer key);
 	Response select(int index);
 	Response keys(Buffer pattern);
-	Response dbsize(int index);
+	Response dbsize();
 	Response lastsave();
 	Response flushdb();
 	Response flushall();
