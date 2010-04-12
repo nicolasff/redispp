@@ -28,12 +28,10 @@ public:
 
 	Buffer string() const;
 	std::string str() const;
-	long value() const;
-	bool boolVal() const;
-	double doubleVal() const;
-	std::vector<Buffer> array() const;
 	RedisMap map() const;
 
+	template <typename T>
+	T get() const;
 	int size() const;
 
 private:

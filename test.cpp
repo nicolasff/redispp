@@ -27,7 +27,7 @@ testPing(redis::Client &redis) {
 
 	redis::Response r = redis.ping();
 	assert(r.type() == REDIS_BOOL);
-	assert(r.boolVal() == true);
+	assert(r.get<bool>() == true);
 }
 void
 test1000(redis::Client &redis, int count) {
@@ -36,7 +36,7 @@ test1000(redis::Client &redis, int count) {
 	fill(buf, buf + count, 'A');
 
 	redis::Response rSet = redis.set("x", redis::Buffer(buf, count));
-	assert(rSet.type() == REDIS_BOOL && rSet.boolVal() == true);
+	assert(rSet.type() == REDIS_BOOL && rSet.get<bool>() == true);
 
 	redis::Response rGet = redis.get("x");
 	assert(rGet.type() == REDIS_STRING && rGet.str() == string(buf, count));
@@ -58,13 +58,13 @@ testSet(redis::Client &redis) {
 
 	// set value to "nil"
 	ret = redis.set("x", "nil");
-	assert(ret.type() == REDIS_BOOL && ret.boolVal());
+	assert(ret.type() == REDIS_BOOL && ret.get<bool>());
 	ret = redis.get("x");
 	assert(ret.type() == REDIS_STRING && ret.str() == "nil");
 
 	// get twice
 	ret = redis.set("x", "val");
-	assert(ret.type() == REDIS_BOOL && ret.boolVal());
+	assert(ret.type() == REDIS_BOOL && ret.get<bool>());
 	ret = redis.get("x");
 	assert(ret.type() == REDIS_STRING && ret.str() == "val");
 	ret = redis.get("x");
@@ -72,7 +72,7 @@ testSet(redis::Client &redis) {
 
 	// set, delete, and get → not found.
 	ret = redis.set("x", "val");
-	assert(ret.type() == REDIS_BOOL && ret.boolVal());
+	assert(ret.type() == REDIS_BOOL && ret.get<bool>());
 	redis.del("x");
 	ret = redis.get("x");
 	assert(ret.type() == REDIS_ERR);
@@ -97,7 +97,7 @@ testSet(redis::Client &redis) {
 	string keyRN = "abc\r\ndef";
 	string valRN = "val\r\nxyz";
 	ret = redis.set(keyRN, valRN);
-	assert(ret.type() == REDIS_BOOL && ret.boolVal());
+	assert(ret.type() == REDIS_BOOL && ret.get<bool>());
 	ret = redis.get(keyRN);
 	assert(ret.type() == REDIS_STRING && ret.str() == valRN);
 }
@@ -131,7 +131,7 @@ testRandomKey(redis::Client &redis) {
 
 		ret = redis.exists(ret.string());
 		assert(ret.type() == REDIS_BOOL);
-		assert(ret.boolVal());
+		assert(ret.get<bool>());
 	}
 }
 
@@ -154,8 +154,8 @@ testRename(redis::Client &redis) {
 
 	redis::Response ret = redis.lrange("key1", 0, -1);
 	assert(ret.type() == REDIS_LIST && ret.size() == 2);
-	assert(&ret.array()[0][0] == string("val1"));
-	assert(&ret.array()[1][0] == string("val0"));
+	assert(&ret.get<vector<redis::Buffer> >()[0][0] == string("val1"));
+	assert(&ret.get<vector<redis::Buffer> >()[1][0] == string("val0"));
 }
 
 void
@@ -166,7 +166,7 @@ testRenameNx(redis::Client &redis) {
 	redis.set("key0", "val0");
 	redis.set("key1", "val1");
 	redis::Response ret = redis.renamenx("key0", "key1");
-	assert(ret.type() == REDIS_BOOL && ret.boolVal() == false);
+	assert(ret.type() == REDIS_BOOL && ret.get<bool>() == false);
 	ret = redis.get("key0");
 	assert(ret.type() == REDIS_STRING && ret.str() == "val0");
 	ret = redis.get("key1");
@@ -183,13 +183,13 @@ testRenameNx(redis::Client &redis) {
 
 	ret = redis.lrange("key0", 0, -1);
 	assert(ret.type() == REDIS_LIST && ret.size() == 2);
-	assert(&ret.array()[0][0] == string("val1"));
-	assert(&ret.array()[1][0] == string("val0"));
+	assert(&ret.get<vector<redis::Buffer> >()[0][0] == string("val1"));
+	assert(&ret.get<vector<redis::Buffer> >()[1][0] == string("val0"));
 
 	ret = redis.lrange("key1", 0, -1);
 	assert(ret.type() == REDIS_LIST && ret.size() == 2);
-	assert(&ret.array()[0][0] == string("val1-1"));
-	assert(&ret.array()[1][0] == string("val1-0"));
+	assert(&ret.get<vector<redis::Buffer> >()[0][0] == string("val1-1"));
+	assert(&ret.get<vector<redis::Buffer> >()[1][0] == string("val1-0"));
 
 	redis.del("key2");
 	redis.renamenx("key0", "key2");
@@ -198,8 +198,8 @@ testRenameNx(redis::Client &redis) {
 
 	ret = redis.lrange("key2", 0, -1);
 	assert(ret.type() == REDIS_LIST && ret.size() == 2);
-	assert(&ret.array()[0][0] == string("val1"));
-	assert(&ret.array()[1][0] == string("val0"));
+	assert(&ret.get<vector<redis::Buffer> >()[0][0] == string("val1"));
+	assert(&ret.get<vector<redis::Buffer> >()[1][0] == string("val0"));
 }
 
 void
@@ -217,7 +217,7 @@ testMGet(redis::Client &redis) {
 	l.push_back(redis::Buffer("k1"));
 	redis::Response ret = redis.mget(l);
 	assert(ret.type() == REDIS_LIST && ret.size() == 1);
-	assert(::memcmp(&ret.array()[0][0], "v1", 2) == 0);
+	assert(::memcmp(&ret.get<vector<redis::Buffer> >()[0][0], "v1", 2) == 0);
 
 	l.clear();
 	l.push_back(redis::Buffer("k1"));
@@ -225,9 +225,9 @@ testMGet(redis::Client &redis) {
 	l.push_back(redis::Buffer("k3"));
 	ret = redis.mget(l);
 	assert(ret.type() == REDIS_LIST && ret.size() == 3);
-	assert(::memcmp(&ret.array()[0][0], "v1", 2) == 0);
-	assert(::memcmp(&ret.array()[1][0], "v2", 2) == 0);
-	assert(::memcmp(&ret.array()[2][0], "v3", 2) == 0);
+	assert(::memcmp(&ret.get<vector<redis::Buffer> >()[0][0], "v1", 2) == 0);
+	assert(::memcmp(&ret.get<vector<redis::Buffer> >()[1][0], "v2", 2) == 0);
+	assert(::memcmp(&ret.get<vector<redis::Buffer> >()[2][0], "v3", 2) == 0);
 
 	// TODO: test with an invalid key.
 	l.clear();
@@ -278,14 +278,14 @@ testSetNX(redis::Client &redis) {
 
 	redis.set("key", "42");
 	redis::Response ret = redis.setnx("key", "err");
-	assert(ret.type() == REDIS_BOOL && !ret.boolVal());
+	assert(ret.type() == REDIS_BOOL && !ret.get<bool>());
 
 	ret = redis.get("key");
 	assert(ret.type() == REDIS_STRING && ret.str() == "42");
 
 	redis.del("key");
 	ret = redis.setnx("key", "42");
-	assert(ret.type() == REDIS_BOOL && ret.boolVal());
+	assert(ret.type() == REDIS_BOOL && ret.get<bool>());
 
 	ret = redis.get("key");
 	assert(ret.type() == REDIS_STRING && ret.str() == "42");
@@ -343,11 +343,11 @@ testExists(redis::Client &redis) {
 
 	redis.del("key");
 	redis::Response ret = redis.exists("key");
-	assert(ret.type() == REDIS_BOOL && ret.boolVal() == false);
+	assert(ret.type() == REDIS_BOOL && ret.get<bool>() == false);
 
 	redis.set("key", "value");
 	ret = redis.exists("key");
-	assert(ret.type() == REDIS_BOOL && ret.boolVal() == true);
+	assert(ret.type() == REDIS_BOOL && ret.get<bool>() == true);
 }
 
 void
@@ -383,7 +383,7 @@ testDelete(redis::Client &redis) {
 
 	redis.set("key", "val");
 	redis::Response ret = redis.del("key");
-	assert(ret.type() == REDIS_LONG && ret.value() == 1);
+	assert(ret.type() == REDIS_LONG && ret.get<long>() == 1);
 
 	// multiple, all existing
 	redis.set("x", "0");
@@ -394,21 +394,21 @@ testDelete(redis::Client &redis) {
 	l.push_back("y");
 	l.push_back("z");
 	ret = redis.del(l);
-	assert(ret.type() == REDIS_LONG && ret.value() == 3);
+	assert(ret.type() == REDIS_LONG && ret.get<long>() == 3);
 
 	// multiple, none existing
 	ret = redis.del(l);
-	assert(ret.type() == REDIS_LONG && ret.value() == 0);
+	assert(ret.type() == REDIS_LONG && ret.get<long>() == 0);
 	
 	// multiple, some existing
 	redis.set("y", "1");
 	ret = redis.del(l);
-	assert(ret.type() == REDIS_LONG && ret.value() == 1);
+	assert(ret.type() == REDIS_LONG && ret.get<long>() == 1);
 
 	redis.set("x", "0");
 	redis.set("y", "1");
 	ret = redis.del(l);
-	assert(ret.type() == REDIS_LONG && ret.value() == 2);
+	assert(ret.type() == REDIS_LONG && ret.get<long>() == 2);
 }
 
 void
@@ -416,31 +416,31 @@ testType(redis::Client &redis) {
 
 	redis.set("key", "val");
 	redis::Response ret = redis.type("key");
-	assert(ret.type() == REDIS_LONG && ret.value() == redis::Client::STRING);
+	assert(ret.type() == REDIS_LONG && ret.get<long>() == redis::Client::STRING);
 
 	redis.del("key");
 	redis.lpush("key", "val");
 	ret = redis.type("key");
-	assert(ret.type() == REDIS_LONG && ret.value() == redis::Client::LIST);
+	assert(ret.type() == REDIS_LONG && ret.get<long>() == redis::Client::LIST);
 
 	redis.del("key");
 	redis.sadd("key", "val");
 	ret = redis.type("key");
-	assert(ret.type() == REDIS_LONG && ret.value() == redis::Client::SET);
+	assert(ret.type() == REDIS_LONG && ret.get<long>() == redis::Client::SET);
 
 	redis.del("key");
 	redis.zadd("key", 42, "val");
 	ret = redis.type("key");
-	assert(ret.type() == REDIS_LONG && ret.value() == redis::Client::ZSET);
+	assert(ret.type() == REDIS_LONG && ret.get<long>() == redis::Client::ZSET);
 
 	redis.del("key");
 	redis.hset("key", "field", "val");
 	ret = redis.type("key");
-	assert(ret.type() == REDIS_LONG && ret.value() == redis::Client::HASH);
+	assert(ret.type() == REDIS_LONG && ret.get<long>() == redis::Client::HASH);
 
 	redis.del("key");
 	ret = redis.type("key");
-	assert(ret.type() == REDIS_LONG && ret.value() == redis::Client::NONE);
+	assert(ret.type() == REDIS_LONG && ret.get<long>() == redis::Client::NONE);
 }
 
 void
@@ -448,11 +448,11 @@ testLPushLPop(redis::Client &redis) {
 
 	redis.del("key");
 	redis::Response ret = redis.lpush("key", "val0");
-	assert(ret.type() == REDIS_LONG && ret.value() == 1);
+	assert(ret.type() == REDIS_LONG && ret.get<long>() == 1);
 	ret = redis.lpush("key", "val1");
-	assert(ret.type() == REDIS_LONG && ret.value() == 2);
+	assert(ret.type() == REDIS_LONG && ret.get<long>() == 2);
 	ret = redis.lpush("key", "val2");
-	assert(ret.type() == REDIS_LONG && ret.value() == 3);
+	assert(ret.type() == REDIS_LONG && ret.get<long>() == 3);
 
 	ret = redis.lpop("key");
 	assert(ret.type() == REDIS_STRING && ret.str() == "val2");
@@ -465,7 +465,7 @@ testLPushLPop(redis::Client &redis) {
 
 	// binary push
 	ret = redis.lpush("key", redis::Buffer("v\0a\0l\0", 6));
-	assert(ret.type() == REDIS_LONG && ret.value() == 1);
+	assert(ret.type() == REDIS_LONG && ret.get<long>() == 1);
 	ret = redis.lpop("key");
 	string s = ret.str();
 	assert(ret.type() == REDIS_STRING && ::memcmp(s.c_str(),"v\0a\0l\0", 6) == 0);
@@ -476,11 +476,11 @@ testRPushRPop(redis::Client &redis) {
 
 	redis.del("key");
 	redis::Response ret = redis.rpush("key", "val0");
-	assert(ret.type() == REDIS_LONG && ret.value() == 1);
+	assert(ret.type() == REDIS_LONG && ret.get<long>() == 1);
 	ret = redis.rpush("key", "val1");
-	assert(ret.type() == REDIS_LONG && ret.value() == 2);
+	assert(ret.type() == REDIS_LONG && ret.get<long>() == 2);
 	ret = redis.rpush("key", "val2");
-	assert(ret.type() == REDIS_LONG && ret.value() == 3);
+	assert(ret.type() == REDIS_LONG && ret.get<long>() == 3);
 
 	ret = redis.rpop("key");
 	assert(ret.type() == REDIS_STRING && ret.str() == "val2");
@@ -493,7 +493,7 @@ testRPushRPop(redis::Client &redis) {
 
 	// binary push
 	ret = redis.rpush("key", redis::Buffer("v\0a\0l\0", 6));
-	assert(ret.type() == REDIS_LONG && ret.value() == 1);
+	assert(ret.type() == REDIS_LONG && ret.get<long>() == 1);
 	ret = redis.rpop("key");
 	string s = ret.str();
 	assert(ret.type() == REDIS_STRING && ::memcmp(s.c_str(),"v\0a\0l\0", 6) == 0);
@@ -506,25 +506,25 @@ testLlen(redis::Client &redis) {
 	redis.lpush("list", "val");
 
 	redis::Response ret = redis.llen("list");
-	assert(ret.type() == REDIS_LONG && ret.value() == 1);
+	assert(ret.type() == REDIS_LONG && ret.get<long>() == 1);
 
 	redis.lpush("list", "val2");
 	ret = redis.llen("list");
-	assert(ret.type() == REDIS_LONG && ret.value() == 2);
+	assert(ret.type() == REDIS_LONG && ret.get<long>() == 2);
 
 	ret = redis.lpop("list");
 	assert(ret.type() == REDIS_STRING && ret.str() == "val2");
 	ret = redis.llen("list");
-	assert(ret.type() == REDIS_LONG && ret.value() == 1);
+	assert(ret.type() == REDIS_LONG && ret.get<long>() == 1);
 
 	ret = redis.lpop("list");
 	assert(ret.type() == REDIS_STRING && ret.str() == "val");
 	ret = redis.llen("list");
-	assert(ret.type() == REDIS_LONG && ret.value() == 0); // empty list is 0
+	assert(ret.type() == REDIS_LONG && ret.get<long>() == 0); // empty list is 0
 
 	redis.del("list");
 	ret = redis.llen("list");
-	assert(ret.type() == REDIS_LONG && ret.value() == 0); // non-existent list is 0
+	assert(ret.type() == REDIS_LONG && ret.get<long>() == 0); // non-existent list is 0
 
 	redis.set("list", "actually not a list");
 	ret = redis.llen("list");
@@ -577,7 +577,7 @@ testLrem(redis::Client &redis) {
 	// ['c', 'b', 'c', 'c', 'b', 'a']
 	redis::Response ret = redis.lrem("list", 2, "b");
 	// ['c', 'c', 'c', 'a']
-	assert(ret.type() == REDIS_LONG && ret.value() == 2); // deleted 2 “b”s from the start
+	assert(ret.type() == REDIS_LONG && ret.get<long>() == 2); // deleted 2 “b”s from the start
 	ret = redis.lindex("list", 0);
 	assert(ret.type() == REDIS_STRING && ret.str() == "c");
 	ret = redis.lindex("list", 1);
@@ -597,7 +597,7 @@ testLrem(redis::Client &redis) {
 	// ['c', 'b', 'c', 'c', 'b', 'a']
 	ret = redis.lrem("list", -2, "c");
 	// ['c', 'b', 'b', 'a']
-	assert(ret.type() == REDIS_LONG && ret.value() == 2); // deleted 2 “c”s from the end.
+	assert(ret.type() == REDIS_LONG && ret.get<long>() == 2); // deleted 2 “c”s from the end.
 	ret = redis.lindex("list", 0);
 	assert(ret.type() == REDIS_STRING && ret.str() == "c");
 	ret = redis.lindex("list", 1);
@@ -609,13 +609,13 @@ testLrem(redis::Client &redis) {
 
 	// remove each element
 	ret = redis.lrem("list", 0, "a");
-	assert(ret.type() == REDIS_LONG && ret.value() == 1); // deleted 1 “a”
+	assert(ret.type() == REDIS_LONG && ret.get<long>() == 1); // deleted 1 “a”
 	ret = redis.lrem("list", 0, "x");
-	assert(ret.type() == REDIS_LONG && ret.value() == 0); // deleted no “x”
+	assert(ret.type() == REDIS_LONG && ret.get<long>() == 0); // deleted no “x”
 	ret = redis.lrem("list", 0, "b");
-	assert(ret.type() == REDIS_LONG && ret.value() == 2); // deleted 2 “b”s from the start
+	assert(ret.type() == REDIS_LONG && ret.get<long>() == 2); // deleted 2 “b”s from the start
 	ret = redis.lrem("list", 0, "c");
-	assert(ret.type() == REDIS_LONG && ret.value() == 1); // deleted 1 “a”
+	assert(ret.type() == REDIS_LONG && ret.get<long>() == 1); // deleted 1 “a”
 
 	redis.del("list");
 	redis.set("list", "actually not a list");
@@ -633,27 +633,27 @@ testLtrim(redis::Client &redis) {
 	redis.lpush("list", "val3");
 
 	redis::Response ret = redis.ltrim("list", 0, 2);
-	assert(ret.type() == REDIS_BOOL && ret.boolVal());
+	assert(ret.type() == REDIS_BOOL && ret.get<bool>());
 
 	ret = redis.llen("list");
-	assert(ret.type() == REDIS_LONG && ret.value() == 3);
+	assert(ret.type() == REDIS_LONG && ret.get<long>() == 3);
 
 	redis.ltrim("list", 0, 0);
 	ret = redis.llen("list");
-	assert(ret.type() == REDIS_LONG && ret.value() == 1);
+	assert(ret.type() == REDIS_LONG && ret.get<long>() == 1);
 
 	ret = redis.lpop("list");
 	assert(ret.type() == REDIS_STRING && ret.str() == "val3");
 
 	ret = redis.ltrim("list", 10, 10000);
-	assert(ret.type() == REDIS_BOOL && ret.boolVal());
+	assert(ret.type() == REDIS_BOOL && ret.get<bool>());
 	ret = redis.ltrim("list", 10000, 10);
-	assert(ret.type() == REDIS_BOOL && ret.boolVal());
+	assert(ret.type() == REDIS_BOOL && ret.get<bool>());
 
 	// test invalid type
 	redis.set("list", "not a list...");
 	ret = redis.ltrim("list", 0, 1);
-	assert(ret.type() == REDIS_BOOL && ret.boolVal() == false);
+	assert(ret.type() == REDIS_BOOL && ret.get<bool>() == false);
 }
 
 void
@@ -672,7 +672,7 @@ testLset(redis::Client &redis) {
 	assert(ret.type() == REDIS_STRING && ret.str() == "val0");
 
 	ret = redis.lset("list", 1, "valx");
-	assert(ret.type() == REDIS_BOOL && ret.boolVal() == true);
+	assert(ret.type() == REDIS_BOOL && ret.get<bool>() == true);
 
 	ret = redis.lindex("list", 0);
 	assert(ret.type() == REDIS_STRING && ret.str() == "val2");
@@ -698,20 +698,20 @@ testLrange(redis::Client &redis) {
 
 	redis::Response ret = redis.lrange("list", 0, 0);
 	assert(ret.type() == REDIS_LIST);
-	l = ret.array();
+	l = ret.get<vector<redis::Buffer> >();
 	assert(l.size() == 1);
 	assert(l[0] == redis::Buffer("val2"));
 
 	ret = redis.lrange("list", 0, 1);
 	assert(ret.type() == REDIS_LIST);
-	l = ret.array();
+	l = ret.get<vector<redis::Buffer> >();
 	assert(l.size() == 2);
 	assert(l[0] == redis::Buffer("val2"));
 	assert(l[1] == redis::Buffer("val1"));
 
 	ret = redis.lrange("list", 0, 2);
 	assert(ret.type() == REDIS_LIST);
-	l = ret.array();
+	l = ret.get<vector<redis::Buffer> >();
 	assert(l.size() == 3);
 	assert(l[0] == redis::Buffer("val2"));
 	assert(l[1] == redis::Buffer("val1"));
@@ -719,7 +719,7 @@ testLrange(redis::Client &redis) {
 
 	ret = redis.lrange("list", 0, 3);
 	assert(ret.type() == REDIS_LIST);
-	l = ret.array();
+	l = ret.get<vector<redis::Buffer> >();
 	assert(l.size() == 3);
 	assert(l[0] == redis::Buffer("val2"));
 	assert(l[1] == redis::Buffer("val1"));
@@ -727,7 +727,7 @@ testLrange(redis::Client &redis) {
 
 	ret = redis.lrange("list", 0, -1);
 	assert(ret.type() == REDIS_LIST);
-	l = ret.array();
+	l = ret.get<vector<redis::Buffer> >();
 	assert(l.size() == 3);
 	assert(l[0] == redis::Buffer("val2"));
 	assert(l[1] == redis::Buffer("val1"));
@@ -735,14 +735,14 @@ testLrange(redis::Client &redis) {
 
 	ret = redis.lrange("list", 0, -2);
 	assert(ret.type() == REDIS_LIST);
-	l = ret.array();
+	l = ret.get<vector<redis::Buffer> >();
 	assert(l.size() == 2);
 	assert(l[0] == redis::Buffer("val2"));
 	assert(l[1] == redis::Buffer("val1"));
 
 	ret = redis.lrange("list", -2, -1);
 	assert(ret.type() == REDIS_LIST);
-	l = ret.array();
+	l = ret.get<vector<redis::Buffer> >();
 	assert(l.size() == 2);
 	assert(l[0] == redis::Buffer("val1"));
 	assert(l[1] == redis::Buffer("val0"));
@@ -750,7 +750,7 @@ testLrange(redis::Client &redis) {
 	redis.del("list");
 	ret = redis.lrange("list", 0, -1);
 	assert(ret.type() == REDIS_LIST);
-	l = ret.array();
+	l = ret.get<vector<redis::Buffer> >();
 	assert(l.size() == 0);
 }
 
@@ -770,13 +770,13 @@ testRpopLpush(redis::Client &redis) {
 
 	ret = redis.lrange("x", 0, -1);	// only def remains in x.
 	assert(ret.type() == REDIS_LIST);
-	redis::List l = ret.array();
+	redis::List l = ret.get<vector<redis::Buffer> >();
 	assert(l.size() == 1);
 	assert(l[0] == redis::Buffer("def"));
 
 	ret = redis.lrange("y", 0, -1);	// abc has been lpushed to y.
 	assert(ret.type() == REDIS_LIST);
-	l = ret.array();
+	l = ret.get<vector<redis::Buffer> >();
 	assert(l.size() == 3);
 	assert(l[0] == redis::Buffer("abc"));
 	assert(l[1] == redis::Buffer("456"));
@@ -800,20 +800,20 @@ testSadd(redis::Client &redis) {
 
 	redis.del("set");
 	redis::Response ret = redis.sadd("set", "val");
-	assert(ret.type() == REDIS_BOOL && ret.boolVal());
+	assert(ret.type() == REDIS_BOOL && ret.get<bool>());
 	ret = redis.sadd("set", "val");
-	assert(ret.type() == REDIS_BOOL && !ret.boolVal());
+	assert(ret.type() == REDIS_BOOL && !ret.get<bool>());
 
 	ret = redis.sismember("set", "val");
-	assert(ret.type() == REDIS_BOOL && ret.boolVal());
+	assert(ret.type() == REDIS_BOOL && ret.get<bool>());
 	ret = redis.sismember("set", "val2");
-	assert(ret.type() == REDIS_BOOL && !ret.boolVal());
+	assert(ret.type() == REDIS_BOOL && !ret.get<bool>());
 
 	ret = redis.sadd("set", "val2");
-	assert(ret.type() == REDIS_BOOL && ret.boolVal());
+	assert(ret.type() == REDIS_BOOL && ret.get<bool>());
 
 	ret = redis.sismember("set", "val2");
-	assert(ret.type() == REDIS_BOOL && ret.boolVal());
+	assert(ret.type() == REDIS_BOOL && ret.get<bool>());
 }
 
 void
@@ -821,16 +821,16 @@ testScard(redis::Client &redis) {
         redis.del("set");
 
 	redis::Response ret = redis.sadd("set", "val");
-	assert(ret.type() == REDIS_BOOL && ret.boolVal());
+	assert(ret.type() == REDIS_BOOL && ret.get<bool>());
 
 	ret = redis.scard("set");
-	assert(ret.type() == REDIS_LONG && ret.value() == 1);
+	assert(ret.type() == REDIS_LONG && ret.get<long>() == 1);
 
 	ret = redis.sadd("set", "val2");
-	assert(ret.type() == REDIS_BOOL && ret.boolVal());
+	assert(ret.type() == REDIS_BOOL && ret.get<bool>());
 
 	ret = redis.scard("set");
-	assert(ret.type() == REDIS_LONG && ret.value() == 2);
+	assert(ret.type() == REDIS_LONG && ret.get<long>() == 2);
 
 }
 
@@ -843,12 +843,12 @@ testSrem(redis::Client &redis) {
 	redis.srem("set", "val0");
 
 	redis::Response ret = redis.scard("set");
-	assert(ret.type() == REDIS_LONG && ret.value() == 1);
+	assert(ret.type() == REDIS_LONG && ret.get<long>() == 1);
 
 	redis.srem("set", "val1");
 
 	ret = redis.scard("set");
-	assert(ret.type() == REDIS_LONG && ret.value() == 0);
+	assert(ret.type() == REDIS_LONG && ret.get<long>() == 0);
 }
 
 void
@@ -861,27 +861,27 @@ testSmove(redis::Client &redis) {
 	redis.sadd("set0", "val1");
 
 	redis::Response ret = redis.smove("set0", "set1", "val0");
-	assert(ret.type() == REDIS_BOOL && ret.boolVal());
+	assert(ret.type() == REDIS_BOOL && ret.get<bool>());
 	ret = redis.smove("set0", "set1", "val0");
-	assert(ret.type() == REDIS_BOOL && !ret.boolVal());
+	assert(ret.type() == REDIS_BOOL && !ret.get<bool>());
 
 	ret = redis.smove("set0", "set1", "val-what");
-	assert(ret.type() == REDIS_BOOL && !ret.boolVal());
+	assert(ret.type() == REDIS_BOOL && !ret.get<bool>());
 
 	ret = redis.scard("set0");
-	assert(ret.type() == REDIS_LONG && ret.value() == 1);
+	assert(ret.type() == REDIS_LONG && ret.get<long>() == 1);
 	ret = redis.scard("set1");
-	assert(ret.type() == REDIS_LONG && ret.value() == 1);
+	assert(ret.type() == REDIS_LONG && ret.get<long>() == 1);
 
 	redis::List l;
 	ret = redis.smembers("set0");
 	assert(ret.type() == REDIS_LIST && ret.size() == 1);
-	l = ret.array();
+	l = ret.get<vector<redis::Buffer> >();
 	assert(l[0] == redis::Buffer("val1"));
 
 	ret = redis.smembers("set1");
 	assert(ret.type() == REDIS_LIST && ret.size() == 1);
-	l = ret.array();
+	l = ret.get<vector<redis::Buffer> >();
 	assert(l[0] == redis::Buffer("val0"));
 }
 
@@ -913,15 +913,15 @@ testSismember(redis::Client &redis) {
 	redis.sadd("set", "val0");
 
 	redis::Response ret = redis.sismember("set", "val0");
-	assert(ret.type() == REDIS_BOOL && ret.boolVal());
+	assert(ret.type() == REDIS_BOOL && ret.get<bool>());
 
 	ret = redis.sismember("set", "val1");
-	assert(ret.type() == REDIS_BOOL && !ret.boolVal());
+	assert(ret.type() == REDIS_BOOL && !ret.get<bool>());
 
 	redis.srem("set", "val0");
 
 	ret = redis.sismember("set", "val0");
-	assert(ret.type() == REDIS_BOOL && !ret.boolVal());
+	assert(ret.type() == REDIS_BOOL && !ret.get<bool>());
 }
 
 void
@@ -941,7 +941,7 @@ testSmembers(redis::Client &redis) {
 	redis::Response ret = redis.smembers("set");
 
 	assert(ret.type() == REDIS_LIST);
-	lRedis = ret.array();
+	lRedis = ret.get<vector<redis::Buffer> >();
 
 	int count = 0;
 	redis::List::const_iterator i, j;
@@ -960,15 +960,15 @@ testSmembers(redis::Client &redis) {
 void
 testSave(redis::Client &redis) {
 	redis::Response ret = redis.save();
-	assert(ret.type() == REDIS_BOOL && ret.boolVal());// don't really know how else to test this...
+	assert(ret.type() == REDIS_BOOL && ret.get<bool>());// don't really know how else to test this...
 }
 
 void
 testBgsave(redis::Client &redis) {
 	redis::Response ret = redis.bgsave();
-	assert(ret.type() == REDIS_BOOL && ret.boolVal());
+	assert(ret.type() == REDIS_BOOL && ret.get<bool>());
 	ret = redis.bgsave();
-	assert(ret.type() == REDIS_BOOL && !ret.boolVal());// the second one should fail.
+	assert(ret.type() == REDIS_BOOL && !ret.get<bool>());// the second one should fail.
 }
 
 void
@@ -983,48 +983,48 @@ testZstuff(redis::Client &redis) {
 	assert(ret.type() == REDIS_LIST && ret.size() == 0);
 
 	ret = redis.zadd("key with spaces", 0, "val0");
-	assert(ret.type() == REDIS_BOOL && ret.boolVal());
+	assert(ret.type() == REDIS_BOOL && ret.get<bool>());
 
 	ret = redis.zadd("key with spaces", 2, "val2");
-	assert(ret.type() == REDIS_BOOL && ret.boolVal());
+	assert(ret.type() == REDIS_BOOL && ret.get<bool>());
 
 	ret = redis.zadd("key with spaces", 1, "val1");
-	assert(ret.type() == REDIS_BOOL && ret.boolVal());
+	assert(ret.type() == REDIS_BOOL && ret.get<bool>());
 
 	ret = redis.zadd("key with spaces", 3, "val3");
-	assert(ret.type() == REDIS_BOOL && ret.boolVal());
+	assert(ret.type() == REDIS_BOOL && ret.get<bool>());
 
 	ret = redis.zrange("key with spaces", 0, -1);
 	assert(ret.type() == REDIS_LIST && ret.size() == 4);
-	l = ret.array();
+	l = ret.get<vector<redis::Buffer> >();
 	assert(l[0] == redis::Buffer("val0"));
 	assert(l[1] == redis::Buffer("val1"));
 	assert(l[2] == redis::Buffer("val2"));
 	assert(l[3] == redis::Buffer("val3"));
 
 	ret = redis.zrem("key with spaces", "valX");
-	assert(ret.type() == REDIS_BOOL && !ret.boolVal());
+	assert(ret.type() == REDIS_BOOL && !ret.get<bool>());
 
 	ret = redis.zrem("key with spaces", "val3");
-	assert(ret.type() == REDIS_BOOL && ret.boolVal());
+	assert(ret.type() == REDIS_BOOL && ret.get<bool>());
 
 	ret = redis.zrange("key with spaces", 0, -1);
 	assert(ret.type() == REDIS_LIST && ret.size() == 3);
-	l = ret.array();
+	l = ret.get<vector<redis::Buffer> >();
 	assert(l[0] == redis::Buffer("val0"));
 	assert(l[1] == redis::Buffer("val1"));
 	assert(l[2] == redis::Buffer("val2"));
 
 	// zGetReverseRange
 	ret = redis.zadd("key with spaces", 3, "val3");
-	assert(ret.type() == REDIS_BOOL && ret.boolVal());
+	assert(ret.type() == REDIS_BOOL && ret.get<bool>());
 
 	ret = redis.zadd("key with spaces", 3, "aal3");
-	assert(ret.type() == REDIS_BOOL && ret.boolVal());
+	assert(ret.type() == REDIS_BOOL && ret.get<bool>());
 
 	ret = redis.zrangebyscore("key with spaces", 0, 3);
 	assert(ret.type() == REDIS_LIST && ret.size() == 5);
-	l = ret.array();
+	l = ret.get<vector<redis::Buffer> >();
 	assert(l[0] == redis::Buffer("val0"));
 	assert(l[1] == redis::Buffer("val1"));
 	assert(l[2] == redis::Buffer("val2"));
@@ -1037,7 +1037,7 @@ testZstuff(redis::Client &redis) {
 
 	ret = redis.zrangebyscore("key with spaces", 0, 3, true);
 	assert(ret.type() == REDIS_LIST && ret.size() == 8);
-	l = ret.array();
+	l = ret.get<vector<redis::Buffer> >();
 	assert(l[0] == redis::Buffer("val0"));
 	assert(l[1] == redis::Buffer("0"));
 	assert(l[2] == redis::Buffer("val1"));
@@ -1051,46 +1051,46 @@ testZstuff(redis::Client &redis) {
 
 	ret = redis.zrangebyscore("key with spaces", 0, 3, 0, 1); // range 0, 3; limit 0, 1.
 	assert(ret.type() == REDIS_LIST && ret.size() == 1);
-	l = ret.array();
+	l = ret.get<vector<redis::Buffer> >();
 	assert(l[0] == redis::Buffer("val0"));
 
 	ret = redis.zrangebyscore("key with spaces", 0, 3, 0, 2); // range 0, 3; limit 0, 2.
 	assert(ret.type() == REDIS_LIST && ret.size() == 2);
-	l = ret.array();
+	l = ret.get<vector<redis::Buffer> >();
 	assert(l[0] == redis::Buffer("val0"));
 	assert(l[1] == redis::Buffer("val1"));
 
 	ret = redis.zrangebyscore("key with spaces", 0, 3, 1, 2); // range 0, 3; limit 1, 2.
 	assert(ret.type() == REDIS_LIST && ret.size() == 2);
-	l = ret.array();
+	l = ret.get<vector<redis::Buffer> >();
 	assert(l[0] == redis::Buffer("val1"));
 	assert(l[1] == redis::Buffer("val2"));
 
 	ret = redis.zrangebyscore("key with spaces", 0, 1, 0, 100); // range 0, 1; limit 0, 100.
 	assert(ret.type() == REDIS_LIST && ret.size() == 2);
-	l = ret.array();
+	l = ret.get<vector<redis::Buffer> >();
 	assert(l[0] == redis::Buffer("val0"));
 	assert(l[1] == redis::Buffer("val1"));
 
 	ret = redis.zcard("key with spaces");
-	assert(ret.type() == REDIS_LONG && ret.value() == 4);
+	assert(ret.type() == REDIS_LONG && ret.get<long>() == 4);
 
 	ret = redis.zscore("key with spaces", "val1");
-	assert(ret.type() == REDIS_DOUBLE && ret.doubleVal() == 1.0);
+	assert(ret.type() == REDIS_DOUBLE && ret.get<double>() == 1.0);
 
 	ret = redis.zscore("key with spaces", "val");
 	assert(ret.type() == REDIS_ERR);
 	// zincrby
 	redis.del("key with spaces");
 	ret = redis.zincrby("key with spaces", 1.0, "val1");
-	assert(ret.type() == REDIS_DOUBLE && ret.doubleVal() == 1.0);
+	assert(ret.type() == REDIS_DOUBLE && ret.get<double>() == 1.0);
 	ret = redis.zscore("key with spaces", "val1");
-	assert(ret.type() == REDIS_DOUBLE && ret.doubleVal() == 1.0);
+	assert(ret.type() == REDIS_DOUBLE && ret.get<double>() == 1.0);
 
 	ret = redis.zincrby("key with spaces", 1.5, "val1");
-	assert(ret.type() == REDIS_DOUBLE && ret.doubleVal() == 2.5);
+	assert(ret.type() == REDIS_DOUBLE && ret.get<double>() == 2.5);
 	ret = redis.zscore("key with spaces", "val1");
-	assert(ret.type() == REDIS_DOUBLE && ret.doubleVal() == 2.5);
+	assert(ret.type() == REDIS_DOUBLE && ret.get<double>() == 2.5);
 
 	//zUnion
 	redis.del("key1");
@@ -1111,11 +1111,11 @@ testZstuff(redis::Client &redis) {
 	l.push_back("key1");
 	l.push_back("key3");
 	ret = redis.zunion("keyU", l);
-	assert(ret.type() == REDIS_LONG && ret.value() == 4);
+	assert(ret.type() == REDIS_LONG && ret.get<long>() == 4);
 
 	ret = redis.zrange("keyU", 0, -1);
 	assert(ret.type() == REDIS_LIST && ret.size() == 4);
-	l = ret.array();
+	l = ret.get<vector<redis::Buffer> >();
 	assert(l[0] == redis::Buffer("val0"));
 	assert(l[1] == redis::Buffer("val1"));
 	assert(l[2] == redis::Buffer("val4"));
@@ -1130,7 +1130,7 @@ testZstuff(redis::Client &redis) {
 	l.push_back("X");
 	l.push_back("Y");
 	ret = redis.zunion("keyU", l);
-	assert(ret.type() == REDIS_LONG && ret.value() == 0);
+	assert(ret.type() == REDIS_LONG && ret.get<long>() == 0);
 
 	ret = redis.zrange("keyU", 0, -1);
 	assert(ret.type() == REDIS_LIST && ret.size() == 0);
@@ -1141,14 +1141,14 @@ testZstuff(redis::Client &redis) {
 	l.push_back("key1");
 	l.push_back("X");
 	ret = redis.zunion("keyU", l);
-	assert(ret.type() == REDIS_LONG && ret.value() == 2);
+	assert(ret.type() == REDIS_LONG && ret.get<long>() == 2);
 
 	ret = redis.zrange("keyU", 0, -1);
 	assert(ret.type() == REDIS_LIST);
-	l = ret.array();
+	l = ret.get<vector<redis::Buffer> >();
 	ret = redis.zrange("key1", 0, -1);
 	assert(ret.type() == REDIS_LIST);
-	redis::List l1 = ret.array();
+	redis::List l1 = ret.get<vector<redis::Buffer> >();
 	assert(l == l1);
 
 	// test weighted zUnion
@@ -1159,10 +1159,10 @@ testZstuff(redis::Client &redis) {
 	weights.push_back(1);
 
 	ret = redis.zunion("keyZ", keys, weights);
-	assert(ret.type() == REDIS_LONG && ret.value() == 4);
+	assert(ret.type() == REDIS_LONG && ret.get<long>() == 4);
 	ret = redis.zrange("keyZ", 0, -1);
 	assert(ret.type() == REDIS_LIST && ret.size() == 4);
-	l = ret.array();
+	l = ret.get<vector<redis::Buffer> >();
 	assert(l[0] == redis::Buffer("val0"));
 	assert(l[1] == redis::Buffer("val1"));
 	assert(l[2] == redis::Buffer("val2"));
@@ -1173,10 +1173,10 @@ testZstuff(redis::Client &redis) {
 	weights.push_back(5);
 	weights.push_back(1);
 	ret = redis.zunion("keyZ", keys, weights);
-	assert(ret.type() == REDIS_LONG && ret.value() == 4);
+	assert(ret.type() == REDIS_LONG && ret.get<long>() == 4);
 	ret = redis.zrange("keyZ", 0, -1);
 	assert(ret.type() == REDIS_LIST && ret.size() == 4);
-	l = ret.array();
+	l = ret.get<vector<redis::Buffer> >();
 	assert(l[0] == redis::Buffer("val0"));
 	assert(l[1] == redis::Buffer("val2"));
 	assert(l[2] == redis::Buffer("val3"));
@@ -1202,11 +1202,11 @@ testZstuff(redis::Client &redis) {
 	keys.push_back("key1");
 	keys.push_back("key2");
 	ret = redis.zinter("keyI", keys);
-	assert(ret.type() == REDIS_LONG && ret.value() == 2);
+	assert(ret.type() == REDIS_LONG && ret.get<long>() == 2);
 
 	ret = redis.zrange("keyI", 0, -1);
 	assert(ret.type() == REDIS_LIST && ret.size() == 2);
-	l = ret.array();
+	l = ret.get<vector<redis::Buffer> >();
 	assert(l[0] == redis::Buffer("val1"));
 	assert(l[1] == redis::Buffer("val3"));
 
@@ -1215,7 +1215,7 @@ testZstuff(redis::Client &redis) {
 	keys.push_back("X");
 	keys.push_back("Y");
 	ret = redis.zinter("keyX", keys);
-	assert(ret.type() == REDIS_LONG && ret.value() == 0);
+	assert(ret.type() == REDIS_LONG && ret.get<long>() == 0);
 	ret = redis.zrange("keyX", 0, -1);
 	assert(ret.type() == REDIS_LIST && ret.size() == 0);
 
@@ -1224,7 +1224,7 @@ testZstuff(redis::Client &redis) {
 	keys.push_back("key1");
 	keys.push_back("Y");
 	ret = redis.zinter("keyY", keys);
-	assert(ret.type() == REDIS_LONG && ret.value() == 0);
+	assert(ret.type() == REDIS_LONG && ret.get<long>() == 0);
 	ret = redis.zrange("keyY", 0, -1);
 	assert(ret.type() == REDIS_LIST && ret.size() == 0);
 
@@ -1251,11 +1251,11 @@ testZstuff(redis::Client &redis) {
 	weights.push_back(1);
 	weights.push_back(1);
 	ret = redis.zinter("keyI", keys, weights);
-	assert(ret.type() == REDIS_LONG && ret.value() == 2);
+	assert(ret.type() == REDIS_LONG && ret.get<long>() == 2);
 
 	ret = redis.zrange("keyI", 0, -1);
 	assert(ret.type() == REDIS_LIST && ret.size() == 2);
-	l = ret.array();
+	l = ret.get<vector<redis::Buffer> >();
 	assert(l[0] == redis::Buffer("val1"));
 	assert(l[1] == redis::Buffer("val3"));
 
@@ -1270,20 +1270,20 @@ testZstuff(redis::Client &redis) {
 	weights.push_back(5);
 	weights.push_back(1);
 	ret = redis.zinter("keyI", keys, weights, "MIN");
-	assert(ret.type() == REDIS_LONG && ret.value() == 2);
+	assert(ret.type() == REDIS_LONG && ret.get<long>() == 2);
 	ret = redis.zrange("keyI", 0, -1);
 	assert(ret.type() == REDIS_LIST && ret.size() == 2);
-	l = ret.array();
+	l = ret.get<vector<redis::Buffer> >();
 	assert(l[0] == redis::Buffer("val1"));
 	assert(l[1] == redis::Buffer("val3"));
 
 	// aggregate: MAX
 	redis.del("keyI");
 	ret = redis.zinter("keyI", keys, weights, "MAX");
-	assert(ret.type() == REDIS_LONG && ret.value() == 2);
+	assert(ret.type() == REDIS_LONG && ret.get<long>() == 2);
 	ret = redis.zrange("keyI", 0, -1);
 	assert(ret.type() == REDIS_LIST && ret.size() == 2);
-	l = ret.array();
+	l = ret.get<vector<redis::Buffer> >();
 	assert(l[0] == redis::Buffer("val3"));
 	assert(l[1] == redis::Buffer("val1"));
 }
@@ -1296,17 +1296,17 @@ testHstuff(redis::Client &redis) {
 
 	// hlen & hset
 	redis::Response ret = redis.hlen("h");
-	assert(ret.type() == REDIS_LONG && ret.value() == 0);
+	assert(ret.type() == REDIS_LONG && ret.get<long>() == 0);
 
 	ret = redis.hset("h", "a", "a-value");
-	assert(ret.type() == REDIS_BOOL && ret.boolVal());
+	assert(ret.type() == REDIS_BOOL && ret.get<bool>());
 	ret = redis.hlen("h");
-	assert(ret.type() == REDIS_LONG && ret.value() == 1);
+	assert(ret.type() == REDIS_LONG && ret.get<long>() == 1);
 
 	ret = redis.hset("h", "b", "b-value");
-	assert(ret.type() == REDIS_BOOL && ret.boolVal());
+	assert(ret.type() == REDIS_BOOL && ret.get<bool>());
 	ret = redis.hlen("h");
-	assert(ret.type() == REDIS_LONG && ret.value() == 2);
+	assert(ret.type() == REDIS_LONG && ret.get<long>() == 2);
 
 	// hget
 	ret = redis.hget("h", "a");
@@ -1317,7 +1317,7 @@ testHstuff(redis::Client &redis) {
 	assert(ret.type() == REDIS_ERR);
 
 	ret = redis.hset("h", "a", "another-value"); // replacement
-	assert(ret.type() == REDIS_BOOL && !ret.boolVal());
+	assert(ret.type() == REDIS_BOOL && !ret.get<bool>());
 	ret = redis.hget("h", "a");
 	assert(ret.type() == REDIS_STRING && ret.str() == "another-value"); // get the new value
 
@@ -1326,9 +1326,9 @@ testHstuff(redis::Client &redis) {
 
 	// hDel
 	ret = redis.hdel("h", "a");
-	assert(ret.type() == REDIS_BOOL && ret.boolVal()); // true on success
+	assert(ret.type() == REDIS_BOOL && ret.get<bool>()); // true on success
 	ret = redis.hdel("h", "a");
-	assert(ret.type() == REDIS_BOOL && !ret.boolVal()); // false on failure
+	assert(ret.type() == REDIS_BOOL && !ret.get<bool>()); // false on failure
 
 	redis.del("h");
 	redis.hset("h", "x", "a");
@@ -1337,7 +1337,7 @@ testHstuff(redis::Client &redis) {
 	// hkeys
 	ret = redis.hkeys("h");
 	assert(ret.type() == REDIS_LIST && ret.size() == 2);
-	redis::List l = ret.array();
+	redis::List l = ret.get<vector<redis::Buffer> >();
 	assert(l[0] == redis::Buffer("x") || l[0] == redis::Buffer("y"));
 	assert(l[1] == redis::Buffer("x") || l[1] == redis::Buffer("y"));
 	assert(l[0] != l[1]);
@@ -1345,7 +1345,7 @@ testHstuff(redis::Client &redis) {
 	// hvals
 	ret = redis.hvals("h");
 	assert(ret.type() == REDIS_LIST && ret.size() == 2);
-	l = ret.array();
+	l = ret.get<vector<redis::Buffer> >();
 	assert(l[0] == redis::Buffer("a") || l[0] == redis::Buffer("b"));
 	assert(l[1] == redis::Buffer("a") || l[1] == redis::Buffer("b"));
 	assert(l[0] != l[1]);
@@ -1359,26 +1359,26 @@ testHstuff(redis::Client &redis) {
 
 	// hExists
 	ret = redis.hexists("h", "x");
-	assert(ret.type() == REDIS_BOOL && ret.boolVal());
+	assert(ret.type() == REDIS_BOOL && ret.get<bool>());
 	ret = redis.hexists("h", "y");
-	assert(ret.type() == REDIS_BOOL && ret.boolVal());
+	assert(ret.type() == REDIS_BOOL && ret.get<bool>());
 	ret = redis.hexists("h", "w");
-	assert(ret.type() == REDIS_BOOL && !ret.boolVal());
+	assert(ret.type() == REDIS_BOOL && !ret.get<bool>());
 	redis.del("h");
 	ret = redis.hexists("h", "x");
-	assert(ret.type() == REDIS_BOOL && !ret.boolVal());
+	assert(ret.type() == REDIS_BOOL && !ret.get<bool>());
 
 	// hIncrBy
 	redis.del("h");
 	ret = redis.hincrby("h", "x", 2);
-	assert(ret.type() == REDIS_LONG && ret.value() == 2);
+	assert(ret.type() == REDIS_LONG && ret.get<long>() == 2);
 	ret = redis.hincrby("h", "x", 1);
-	assert(ret.type() == REDIS_LONG && ret.value() == 3);
+	assert(ret.type() == REDIS_LONG && ret.get<long>() == 3);
 
 	// non-numeric: atol() and then increment.
 	redis.hset("h", "y", "NaN");
 	ret = redis.hincrby("h", "y", 1);
-	assert(ret.type() == REDIS_LONG && ret.value() == 1);
+	assert(ret.type() == REDIS_LONG && ret.get<long>() == 1);
 }
 
 int main() {

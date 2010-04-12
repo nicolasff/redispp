@@ -108,22 +108,6 @@ Response::str() const {
 	return ret;
 }
 
-long 
-Response::value() const {
-
-	return m_long;
-}
-
-bool
-Response::boolVal() const {
-	return m_bool;
-}
-
-double
-Response::doubleVal() const {
-	return m_double;
-}
-
 int
 Response::size() const {
 	if(m_type == REDIS_LIST) {
@@ -136,13 +120,34 @@ Response::size() const {
 	return -1;
 }
 
-std::vector<Buffer>
-Response::array() const {
-	return m_array;
-}
 RedisMap
 Response::map() const {
 	return m_map;
+}
+
+template <>
+long Response::get<long>() const {
+	return m_long;
+}
+
+template <>
+const char* Response::get<const char *>() const {
+	return &m_str[0];
+}
+
+template <>
+bool Response::get<bool>() const {
+	return m_bool;
+}
+
+template <>
+double Response::get<double>() const {
+	return m_double;
+}
+
+template <>
+std::vector<Buffer> Response::get<std::vector<Buffer> >() const {
+	return m_array;
 }
 
 }

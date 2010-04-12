@@ -285,7 +285,7 @@ Client::read_key_value_list() {
 	if(bulk.type() != REDIS_LIST || (bulk.size() % 2 != 0)) {
 		return Response(REDIS_ERR);
 	}
-	redis::List l = bulk.array();
+	redis::List l = bulk.get<vector<Buffer> >();
 
 	Response ret(REDIS_HASH);
 	redis::List::const_iterator i;
