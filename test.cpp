@@ -795,6 +795,62 @@ testRpopLpush(redis::Client &redis) {
 	assert(ret.type() == REDIS_LIST && ret.size() == 0);
 }
 
+void
+testSadd(redis::Client &redis) {
+
+	redis.del("set");
+	redis::Response ret = redis.sadd("set", "val");
+	assert(ret.type() == REDIS_BOOL && ret.boolVal());
+	ret = redis.sadd("set", "val");
+	assert(ret.type() == REDIS_BOOL && !ret.boolVal());
+
+	ret = redis.sismember("set", "val");
+	assert(ret.type() == REDIS_BOOL && ret.boolVal());
+	ret = redis.sismember("set", "val2");
+	assert(ret.type() == REDIS_BOOL && !ret.boolVal());
+
+	ret = redis.sadd("set", "val2");
+	assert(ret.type() == REDIS_BOOL && ret.boolVal());
+
+	ret = redis.sismember("set", "val2");
+	assert(ret.type() == REDIS_BOOL && ret.boolVal());
+}
+
+void
+testScard(redis::Client &redis) {
+        redis.del("set");
+
+	redis::Response ret = redis.sadd("set", "val");
+	assert(ret.type() == REDIS_BOOL && ret.boolVal());
+
+	ret = redis.scard("set");
+	assert(ret.type() == REDIS_LONG && ret.value() == 1);
+
+	ret = redis.sadd("set", "val2");
+	assert(ret.type() == REDIS_BOOL && ret.boolVal());
+
+	ret = redis.scard("set");
+	assert(ret.type() == REDIS_LONG && ret.value() == 2);
+
+}
+
+void
+testSrem(redis::Client &redis) {
+	redis.del("set");
+
+	redis.sadd("set", "val0");
+	redis.sadd("set", "val1");
+	redis.srem("set", "val0");
+
+	redis::Response ret = redis.scard("set");
+	assert(ret.type() == REDIS_LONG && ret.value() == 1);
+
+	redis.srem("set", "val1");
+
+	ret = redis.scard("set");
+	assert(ret.type() == REDIS_LONG && ret.value() == 0);
+}
+
 
 int main() {
 
@@ -830,6 +886,9 @@ int main() {
 	testLset(r);
 	testLrange(r);
 	testRpopLpush(r);
+	testSadd(r);
+	testScard(r);
+	testSrem(r);
 
 
 	cout << endl << tests_passed << " tests passed, " << tests_failed << " failed." << endl;

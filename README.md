@@ -70,10 +70,10 @@ It is released under the [New BSD License](http://www.opensource.org/licenses/bs
 
 --------------------
 
-* sadd
-* srem
+* sadd (**TESTED**)
+* srem (**TESTED**)
 * sismember
-* scard
+* scard (**TESTED**)
 * spop
 * srandmember
 * smove
