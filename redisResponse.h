@@ -27,7 +27,6 @@ public:
 	RedisResponseType type() const;
 
 	Buffer string() const;
-	std::string str() const;
 	RedisMap map() const;
 
 	template <typename T>

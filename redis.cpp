@@ -228,7 +228,7 @@ Client::read_double() {
 	if(ret.type() != REDIS_STRING) {
 		return ret;
 	}
-	string s = ret.str();
+	string s = ret.get<string>();
 	ret.type(REDIS_DOUBLE);
 	ret.setDouble(atof(&s[0]));
 
@@ -274,7 +274,7 @@ Client::read_multi_bulk() {
 		if(s.type() != REDIS_STRING) {
 			return err;
 		}
-		ret.addString(s.string());
+		ret.addString(s.get<redis::Buffer>());
 	}
 	return ret;
 }
@@ -309,7 +309,7 @@ Client::read_type_reply() {
 
 	ret.type(REDIS_LONG);
 
-	string t = ret.str();
+	string t = ret.get<string>();
 	if(t == "string") {
 		ret.setLong(Client::STRING);
 		return ret;
@@ -542,7 +542,7 @@ Client::read_info_reply() {
 		return Response(REDIS_ERR);
 	}
 
-	string s = ret.str();
+	string s = ret.get<string>();
 	ret.type(REDIS_INFO_MAP);
 
 	// now split it on '\r'

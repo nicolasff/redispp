@@ -95,19 +95,6 @@ Response::type() const {
 	return m_type;
 }
 
-Buffer
-Response::string() const {
-	return m_str;
-}
-
-string 
-Response::str() const {
-
-	std::string ret;
-	ret.insert(ret.end(), m_str.begin(), m_str.end());
-	return ret;
-}
-
 int
 Response::size() const {
 	if(m_type == REDIS_LIST) {
@@ -149,6 +136,20 @@ template <>
 std::vector<Buffer> Response::get<std::vector<Buffer> >() const {
 	return m_array;
 }
+
+template <>
+string Response::get<string>() const {
+
+	std::string ret;
+	ret.insert(ret.end(), m_str.begin(), m_str.end());
+	return ret;
+}
+
+template <>
+Buffer Response::get<Buffer>() const {
+	return m_str;
+}
+
 
 }
 
