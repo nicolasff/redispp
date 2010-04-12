@@ -26,7 +26,6 @@ public:
 	void type(RedisResponseType t);
 	RedisResponseType type() const;
 
-	Buffer string() const;
 	RedisMap map() const;
 
 	template <typename T>

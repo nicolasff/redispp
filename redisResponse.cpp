@@ -107,11 +107,6 @@ Response::size() const {
 	return -1;
 }
 
-RedisMap
-Response::map() const {
-	return m_map;
-}
-
 template <>
 long Response::get<long>() const {
 	return m_long;
@@ -150,6 +145,10 @@ Buffer Response::get<Buffer>() const {
 	return m_str;
 }
 
+template <>
+RedisMap Response::get<RedisMap>() const {
+	return m_map;
+}
 
 }
 
