@@ -36,15 +36,15 @@ It is released under the [New BSD License](http://www.opensource.org/licenses/bs
 * exec
 * discard
 * auth (**TESTED MANUALLY**)
-* select
+* select (**TESTED MANUALLY**)
 * keys (**TESTED**)
 * dbsize (**TESTED**)
-* lastsave
+* lastsave (**TESTED**)
 * flushdb (**TESTED**)
 * flushall (**TESTED**)
 * save (**TESTED**)
 * bgsave (**TESTED**)
-* bgrewriteaof
+* bgrewriteaof (**NOT TESTED**)
 * move
 * sort
 * type (**TESTED**)

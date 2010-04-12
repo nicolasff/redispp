@@ -1417,6 +1417,15 @@ testFlushall(redis::Client &redis) {
 	assert(ret.type() == REDIS_LONG && ret.get<long>() == 0);
 }
 
+void
+testLastsave(redis::Client &redis) {
+
+	redis.save();
+	sleep(2);
+	redis::Response ret = redis.lastsave();
+	assert(ret.type() == REDIS_LONG && time(0) - ret.get<long>() < 10);
+}
+
 int main() {
 
 	redis::Client r;
@@ -1465,6 +1474,7 @@ int main() {
 //	testTtl(r);
 //	testFlushdb(r); // WARNING, THIS WILL DESTROY ALL YOUR DATA.
 //	testFlushall(r); // WARNING, THIS WILL DESTROY ALL YOUR DATA.
+	testLastsave(r);
 
 	cout << endl << tests_passed << " tests passed, " << tests_failed << " failed." << endl;
 
