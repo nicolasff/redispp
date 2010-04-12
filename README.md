@@ -73,6 +73,7 @@ It is released under the [New BSD License](http://www.opensource.org/licenses/bs
 * sadd (**TESTED**)
 * srem (**TESTED**)
 * sismember
+* smembers
 * scard (**TESTED**)
 * spop
 * srandmember

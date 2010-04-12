@@ -704,6 +704,13 @@ Client::sismember(Buffer key, Buffer val) {
 }
 
 Response
+Client::smembers(Buffer key) {
+	Command cmd("SMEMBERS");
+	cmd << key;
+	return run(cmd, &Client::read_multi_bulk);
+}
+
+Response
 Client::srandmember(Buffer key) {
 	return generic_pop("SRANDMEMBER", key);
 }

@@ -86,6 +86,7 @@ public:
 	Response spop(Buffer key);
 	Response scard(Buffer key);
 	Response sismember(Buffer key, Buffer val);
+	Response smembers(Buffer key);
 	Response srandmember(Buffer key);
 	Response smove(Buffer src, Buffer dst, Buffer member);
 	Response sinter(List keys);

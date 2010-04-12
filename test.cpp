@@ -851,6 +851,41 @@ testSrem(redis::Client &redis) {
 	assert(ret.type() == REDIS_LONG && ret.value() == 0);
 }
 
+void
+testSmove(redis::Client &redis) {
+	redis.del("set0");
+	redis.del("set1");
+
+	redis.sadd("set0", "val0");
+	redis.sadd("set0", "val1");
+
+	redis::Response ret = redis.smove("set0", "set1", "val0");
+	assert(ret.type() == REDIS_BOOl && ret.boolVal());
+	ret = redis.smove("set0", "set1", "val0");
+	assert(ret.type() == REDIS_BOOl && !ret.boolVal());
+
+	ret = redis.smove("set0", "set1", "val-what");
+	assert(ret.type() == REDIS_BOOl && !ret.boolVal());
+
+	ret = redis.scard("set0");
+	assert(ret.type() == REDIS_LONG && ret.value() == 1);
+	ret = redis.scard("set1");
+	assert(ret.type() == REDIS_LONG && ret.value() == 1);
+
+	redis::List l;
+	ret = redis.smembers("set0");
+	assert(ret.type() == REDIS_LIST && ret.size() == 1);
+	l = ret.array();
+	assert(l[0] == redis::Buffer("val1"));
+
+	ret = redis.smembers("set1");
+	assert(ret.type() == REDIS_LIST && ret.size() == 1);
+	l = ret.array();
+	assert(l[0] == redis::Buffer("val0"));
+
+}
+
+
 
 int main() {
 
@@ -889,6 +924,7 @@ int main() {
 	testSadd(r);
 	testScard(r);
 	testSrem(r);
+	testSmove(r);
 
 
 	cout << endl << tests_passed << " tests passed, " << tests_failed << " failed." << endl;
