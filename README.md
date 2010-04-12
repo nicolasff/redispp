@@ -77,7 +77,7 @@ It is released under the [New BSD License](http://www.opensource.org/licenses/bs
 * scard (**TESTED**)
 * spop
 * srandmember
-* smove
+* smove (**TESTED**)
 * sinter
 * sunion
 * sdiff

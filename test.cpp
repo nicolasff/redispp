@@ -860,12 +860,12 @@ testSmove(redis::Client &redis) {
 	redis.sadd("set0", "val1");
 
 	redis::Response ret = redis.smove("set0", "set1", "val0");
-	assert(ret.type() == REDIS_BOOl && ret.boolVal());
+	assert(ret.type() == REDIS_BOOL && ret.boolVal());
 	ret = redis.smove("set0", "set1", "val0");
-	assert(ret.type() == REDIS_BOOl && !ret.boolVal());
+	assert(ret.type() == REDIS_BOOL && !ret.boolVal());
 
 	ret = redis.smove("set0", "set1", "val-what");
-	assert(ret.type() == REDIS_BOOl && !ret.boolVal());
+	assert(ret.type() == REDIS_BOOL && !ret.boolVal());
 
 	ret = redis.scard("set0");
 	assert(ret.type() == REDIS_LONG && ret.value() == 1);
