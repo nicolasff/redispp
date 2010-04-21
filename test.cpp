@@ -119,20 +119,19 @@ testGetSet(redis::Client &redis) {
 void
 testRandomKey(redis::Client &redis) {
 
-	// FIXME: this test is disabled, waiting for antirez to close redis issue #88:
-	// http://code.google.com/p/redis/issues/detail?id=88#c6
-
-	return;
+	bool success_key_string = true, success_types = true, success_values = true;
 
 	for(int i = 0; i < 1000; ++i) {
 		redis::Response ret = redis.randomkey();
-		cout << ret.get<string>() << endl;
-		assert(ret.type() == REDIS_STRING);
+		success_key_string &= (ret.type() == REDIS_STRING);
 
 		ret = redis.exists(ret.get<redis::Buffer>());
-		assert(ret.type() == REDIS_BOOL);
-		assert(ret.get<bool>());
+		success_types &= (ret.type() == REDIS_BOOL);
+		success_values &= (ret.get<bool>());
 	}
+	assert(success_key_string);
+	assert(success_types);
+	assert(success_values);
 }
 
 void
@@ -311,13 +310,10 @@ testIncr(redis::Client &redis) {
 	// increment a non-numeric string
 	redis.del("key");
 	redis.set("key", "abc");
-	redis.incr("key");
+	ret = redis.incr("key");
+	assert(ret.type() == REDIS_ERR);
 	ret = redis.get("key");
-	assert(ret.type() == REDIS_STRING && ret.get<string>() == "1");
-
-	redis.incr("key");
-	ret = redis.get("key");
-	assert(ret.type() == REDIS_STRING && ret.get<string>() == "2");
+	assert(ret.type() == REDIS_STRING && ret.get<string>() == "abc");
 }
 
 void
