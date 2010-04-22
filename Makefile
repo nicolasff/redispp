@@ -1,6 +1,6 @@
 OUT=test
 OBJS=test.o redis.o redisCommand.o redisResponse.o redisSortParams.o redisBuffer.o
-CPPFLAGS=-ggdb -Wall -Wextra
+CPPFLAGS=-O2 -Wall -Wextra
 
 all: $(OUT)
 

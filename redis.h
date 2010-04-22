@@ -134,7 +134,7 @@ public:
 
 	Response multi();
 	bool pipeline();
-	void discard();
+	Response discard();
 	std::vector<Response> exec();
 
 private:

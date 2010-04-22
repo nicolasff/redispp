@@ -71,15 +71,15 @@ Client::run(Command &c, ResponseReader fun) {
 	}
 }
 
-void
+Response
 Client::discard() {
-	Command cmd("DISCARD");
-	run(cmd);
-
 	m_multi = false;
 	m_pipeline = false;
 	m_cmd.clear();
 	m_readers.clear();
+
+	Command cmd("DISCARD");
+	return run(cmd, &Client::read_status_code);
 }
 
 

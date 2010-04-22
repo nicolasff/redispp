@@ -1437,10 +1437,12 @@ testLastsave(redis::Client &redis) {
 void
 testMultiExec(redis::Client &redis) {
 
+	//empty
 	redis.multi();
 	vector<redis::Response> vret = redis.exec();
 	assert(vret.size() == 0);
 
+	// simple commands
 	redis.multi();
 		redis.set("x", "abc");
 		redis.set("y", "def");
@@ -1453,6 +1455,35 @@ testMultiExec(redis::Client &redis) {
 	assert(vret[1].type() == REDIS_BOOL && vret[1].get<bool>());
 	assert(vret[2].type() == REDIS_STRING && vret[2].get<string>() == "abc");
 	assert(vret[3].type() == REDIS_STRING && vret[3].get<string>() == "def");
+
+	// support for errors
+	redis.multi();
+		redis.del("x");
+		redis.get("x");
+	vret = redis.exec();
+	assert(vret.size() == 2);
+	assert(vret[0].type() == REDIS_LONG && vret[0].get<long>() == 1);
+	assert(vret[1].type() == REDIS_ERR);
+
+	// two multis
+	redis::Response ret = redis.multi();
+	assert(ret.type() == REDIS_BOOL && ret.get<bool>());
+	ret = redis.multi();
+	assert(ret.type() == REDIS_ERR);
+	
+	// exec without multi
+	vret = redis.exec();
+	assert(vret.size() == 0);
+
+	// support for discard
+	redis.set("x", "abc");
+	redis.multi();
+		redis.del("x");
+	ret = redis.discard(); // do not execute transaction → "x" is still pointing to "abc"
+	assert(ret.type() == REDIS_BOOL && ret.get<bool>());
+
+	ret = redis.get("x");
+	assert(ret.type() == REDIS_STRING && ret.get<string>() == "abc");
 }
 
 int main() {
