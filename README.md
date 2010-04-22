@@ -24,9 +24,9 @@ It is released under the [New BSD License](http://www.opensource.org/licenses/bs
 * ping (**TESTED**)
 * setnx (**TESTED**)
 * exists (**TESTED**)
-* randomkey (**TESTED: depends on redis issue #88**)
+* randomkey (**TESTED**)
 * del (**TESTED**)
-* mget
+* mget (**TESTED**)
 * mset (**NOT ENTIRELY TESTED**)
 * msetnx
 * expire (**TESTED**)

@@ -13,6 +13,7 @@ namespace redis {
 class Client {
 
 	typedef Response (Client::*ResponseReader)();
+	typedef std::vector<Response> (Client::*ResponseListReader)();
 
 public:
 	Client();
@@ -131,7 +132,7 @@ public:
 	Response hgetall(Buffer key);
 	Response hincrby(Buffer key, Buffer field, double d);
 
-	bool multi();
+	Response multi();
 	bool pipeline();
 	void discard();
 	std::vector<Response> exec();
@@ -168,6 +169,7 @@ private:
 	Response read_info_reply();
 	Response read_type_reply();
 	Response read_key_value_list();
+	Response read_multi_string();
 
 	std::string getline();
 	int m_fd;
@@ -175,6 +177,9 @@ private:
 	// MULTI/EXEC
 	bool m_multi;
 	std::vector<ResponseReader> m_readers;
+
+	// MGET
+	std::vector<List> m_mget_keys;
 
 	// pipeline
 	bool m_pipeline;

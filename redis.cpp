@@ -80,13 +80,16 @@ Client::discard() {
 }
 
 
-bool
+Response
 Client::multi() {
 	if(m_multi || m_pipeline) {
-		return false;
+		return Response(REDIS_ERR);
 	}
+
+	Command cmd("MULTI");
+	Response ret = run(cmd, &Client::read_status_code);
 	m_multi = true;
-	return true;
+	return ret;
 }
 
 bool
@@ -278,6 +281,32 @@ Client::read_multi_bulk() {
 	}
 	return ret;
 }
+
+Response
+Client::read_multi_string() {
+
+	std::string str = getline();
+	if(str[0] != '*' || m_mget_keys.size() == 0) {
+		return Response(REDIS_ERR);
+	}
+	long count = ::atol(&str[1]);
+	List keys = *(m_mget_keys.rbegin());
+	m_mget_keys.pop_back();
+	if(count <= 0 || count != (int)keys.size()) {
+		return Response(REDIS_ERR);
+	}
+
+	Response ret(REDIS_HASH);
+	List::iterator k;
+	for(k = keys.begin(); k != keys.end(); k++) {
+		Response v = read_string();
+		if(v.type() == REDIS_STRING) { // key found
+			ret.addString(*k, v.get<Buffer>());
+		}
+	}
+	return ret;
+}
+
 
 Response
 Client::read_key_value_list() {
@@ -501,7 +530,8 @@ Client::del(List keys) {
 
 Response
 Client::mget(List keys) {
-	return generic_multi_parameter("MGET", keys, &Client::read_multi_bulk);
+	m_mget_keys.push_back(keys);
+	return generic_multi_parameter("MGET", keys, &Client::read_multi_string);
 }
 
 Response

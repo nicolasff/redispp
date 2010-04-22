@@ -215,25 +215,37 @@ testMGet(redis::Client &redis) {
 	redis::List l;
 	l.push_back(redis::Buffer("k1"));
 	redis::Response ret = redis.mget(l);
-	assert(ret.type() == REDIS_LIST && ret.size() == 1);
-	assert(::memcmp(&ret.get<vector<redis::Buffer> >()[0][0], "v1", 2) == 0);
+	assert(ret.size() == 1);
+	assert(ret.get("k1") == redis::Buffer("v1"));
 
+	// all good
 	l.clear();
 	l.push_back(redis::Buffer("k1"));
 	l.push_back(redis::Buffer("k2"));
 	l.push_back(redis::Buffer("k3"));
 	ret = redis.mget(l);
-	assert(ret.type() == REDIS_LIST && ret.size() == 3);
-	assert(::memcmp(&ret.get<vector<redis::Buffer> >()[0][0], "v1", 2) == 0);
-	assert(::memcmp(&ret.get<vector<redis::Buffer> >()[1][0], "v2", 2) == 0);
-	assert(::memcmp(&ret.get<vector<redis::Buffer> >()[2][0], "v3", 2) == 0);
+	assert(ret.size() == 3);
 
-	// TODO: test with an invalid key.
+	assert(ret.get("k1") == redis::Buffer("v1"));
+	assert(ret.get("k2") == redis::Buffer("v2"));
+	assert(ret.get("k3") == redis::Buffer("v3"));
+
+	// invalid key.
 	l.clear();
 	l.push_back(redis::Buffer("k1"));
 	l.push_back(redis::Buffer("k3"));
 	l.push_back(redis::Buffer("NoKey"));
 	ret = redis.mget(l);
+	assert(ret.size() == 2);
+	assert(ret.get("k1") == redis::Buffer("v1"));
+	assert(ret.get("k3") == redis::Buffer("v3"));
+
+	try {
+		ret.get("NoKey");
+		assert(false);
+	} catch(...) {
+		assert(true);
+	}
 }
 
 
@@ -1471,6 +1483,7 @@ int main() {
 //	testFlushdb(r); // WARNING, THIS WILL DESTROY ALL YOUR DATA.
 //	testFlushall(r); // WARNING, THIS WILL DESTROY ALL YOUR DATA.
 	testLastsave(r);
+
 
 	cout << endl << tests_passed << " tests passed, " << tests_failed << " failed." << endl;
 

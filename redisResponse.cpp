@@ -158,5 +158,11 @@ RedisMap Response::get<RedisMap>() const {
 	return m_map;
 }
 
+Buffer
+Response::get(Buffer key) const { // maps only
+
+	return m_map.at(key);
+}
+
 }
 

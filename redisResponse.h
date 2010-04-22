@@ -24,6 +24,8 @@ public:
 
 	template <typename T> bool set(T t);
 	template <typename T> T get() const;
+
+	Buffer get(Buffer key) const;
 	int size() const;
 
 private:
