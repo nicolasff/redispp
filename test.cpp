@@ -1434,12 +1434,32 @@ testLastsave(redis::Client &redis) {
 	assert(ret.type() == REDIS_LONG && time(0) - ret.get<long>() < 10);
 }
 
+void
+testMultiExec(redis::Client &redis) {
+
+	redis.multi();
+	vector<redis::Response> vret = redis.exec();
+	assert(vret.size() == 0);
+
+	redis.multi();
+		redis.set("x", "abc");
+		redis.set("y", "def");
+		redis.get("x");
+		redis.get("y");
+	vret = redis.exec();
+
+	assert(vret.size() == 4);
+	assert(vret[0].type() == REDIS_BOOL && vret[0].get<bool>());
+	assert(vret[1].type() == REDIS_BOOL && vret[1].get<bool>());
+	assert(vret[2].type() == REDIS_STRING && vret[2].get<string>() == "abc");
+	assert(vret[3].type() == REDIS_STRING && vret[3].get<string>() == "def");
+}
+
 int main() {
 
 	redis::Client r;
 
 	r.connect(); // default settings
-
 	testPing(r);
 	test1000(r, 1000);
 	test1000(r, 1000000);
@@ -1482,7 +1502,9 @@ int main() {
 //	testTtl(r);
 //	testFlushdb(r); // WARNING, THIS WILL DESTROY ALL YOUR DATA.
 //	testFlushall(r); // WARNING, THIS WILL DESTROY ALL YOUR DATA.
-	testLastsave(r);
+//	testLastsave(r);
+
+	testMultiExec(r);
 
 
 	cout << endl << tests_passed << " tests passed, " << tests_failed << " failed." << endl;

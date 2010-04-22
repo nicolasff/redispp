@@ -32,8 +32,8 @@ It is released under the [New BSD License](http://www.opensource.org/licenses/bs
 * expire (**TESTED**)
 * expireat (**TESTED**)
 * info
-* multi
-* exec
+* multi (**PARTIALLY TESTED**)
+* exec (**PARTIALLY TESTED**)
 * discard
 * auth (**TESTED MANUALLY**)
 * select (**TESTED MANUALLY**)

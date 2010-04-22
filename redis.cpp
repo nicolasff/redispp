@@ -73,6 +73,9 @@ Client::run(Command &c, ResponseReader fun) {
 
 void
 Client::discard() {
+	Command cmd("DISCARD");
+	run(cmd);
+
 	m_multi = false;
 	m_pipeline = false;
 	m_cmd.clear();
@@ -103,14 +106,25 @@ Client::pipeline() {
 
 vector<Response>
 Client::exec() {
+	if(m_multi) {
+		return exec_multi();
+	} else if(m_pipeline) {
+		return exec_pipeline();
+	}
+	return vector<Response>();
+}
+
+vector<Response>
+Client::exec_multi() {
 	vector<Response> ret;
 
-	if(m_multi) {
-		Command cmd("EXEC");
-		run(cmd);
-	} else if (m_pipeline) {
-		int ret = write(m_fd, &m_cmd[0], m_cmd.size());
-		(void)ret; // TODO: check return value.
+	Command cmd("EXEC");
+	run(cmd);
+
+	// this will contain the number of responses.
+	std::string str = getline();
+	if(str[0] != '*' || ::atol(&str[1]) != (long)m_readers.size()) {
+		return vector<Response>(); // fail.
 	}
 
 	// read back each response
@@ -121,10 +135,35 @@ Client::exec() {
 	}
 
 	// cleanup
-	discard();
+	m_multi = false;
+	m_cmd.clear();
+	m_readers.clear();
 
 	return ret;
 }
+
+vector<Response>
+Client::exec_pipeline() {
+	vector<Response> ret;
+
+	int wret = write(m_fd, &m_cmd[0], m_cmd.size());
+	(void)wret; // TODO: check return value.
+
+	// read back each response
+	vector<ResponseReader>::const_iterator funptr;
+	for(funptr = m_readers.begin(); funptr != m_readers.end(); funptr++) {
+		Response resp = (this->**funptr)();
+		ret.push_back(resp);
+	}
+
+	// cleanup
+	m_pipeline = false;
+	m_cmd.clear();
+	m_readers.clear();
+
+	return ret;
+}
+
 
 Response
 Client::read_string() {

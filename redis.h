@@ -172,7 +172,12 @@ private:
 	Response read_multi_string();
 
 	std::string getline();
-	int m_fd;
+
+	std::vector<Response> exec_multi();
+	std::vector<Response> exec_pipeline();
+
+
+	int m_fd; // socket
 
 	// MULTI/EXEC
 	bool m_multi;
